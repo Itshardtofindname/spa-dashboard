@@ -39,7 +39,7 @@ export default function ActionPlanSection({ data }) {
             <p className="text-gray-600 text-[11px] mt-0.5">Seno sangat konsisten menawarkan SKU sekunder dan promo bundling di setiap invoice baru.</p>
           </div>
           <div className="bg-emerald-50/50 p-2.5 rounded border border-emerald-100">
-            <p className="font-bold text-emerald-900">DKS (Disiplin Kunjungan Sales) (100% On-Time)</p>
+            <p className="font-bold text-emerald-900">DKS (Daftar Kunjungan Sales) (100% On-Time)</p>
             <p className="text-gray-600 text-[11px] mt-0.5">Check-in geo-logging 100% valid tanpa deviasi rute buat mingguan.</p>
           </div>
         </div>
