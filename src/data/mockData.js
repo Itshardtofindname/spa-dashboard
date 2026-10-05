@@ -13,14 +13,14 @@ export const salesmanData = {
   pillars: [
     { id: 1, name: "Pilar 1: RESULT", subtitle: "Sales Achievement & Growth", score: "1.0", status: "LOW" },
     { id: 2, name: "Pilar 2: STRATEGIC ALIGNMENT", subtitle: "Cross Sell, Outlet, & Repeat Order", score: "7.0", status: "MED-HIGH" },
-    { id: 3, name: "Pilar 3: PROCESS", subtitle: "Disiplin Kunjungan Sales (DKS)", score: "2.0", status: "MEDIUM" }
+    { id: 3, name: "Pilar 3: PROCESS", subtitle: "Daftar Kunjungan Sales (DKS)", score: "2.0", status: "MEDIUM" }
   ],
   scorecards: [
     { aspect: "RESULT", indicator: "Sales Achievement & Growth", value: "1.0", status: "LOW (1)" },
     { aspect: "STRATEGIC ALIGNMENT", indicator: "Cross Selling - Up Selling", value: "3.0", status: "HIGH (3)" },
     { aspect: "STRATEGIC ALIGNMENT", indicator: "Active Outlet (OA)", value: "2.0", status: "MED (2)" },
     { aspect: "STRATEGIC ALIGNMENT", indicator: "Repeat Order", value: "2.0", status: "MED (2)" },
-    { aspect: "PROCESS", indicator: "DKS (Disiplin Kunjungan Sales)", value: "2.0", status: "MED (2)" }
+    { aspect: "PROCESS", indicator: "DKS (Daftar Kunjungan Sales)", value: "2.0", status: "MED (2)" }
   ],
   repeatOrderLow: [
     { store: "Toko Rejeki Jaya", detail: "Kuningan Barat • PO Terakhir: 12 Ags" },
