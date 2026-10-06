@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { getDailyMonitoringData } from '../data/dailyMonitoringData';
-import CalendarPicker from './CalendarPicker'; // <-- Impor kalender grid
+import { customerList, salesmanList } from '../data/dataSales';
+import CalendarPicker from './CalendarPicker';
 
-export default function DailyMonitoring({ salesmanData, officeName }) {
-  const currentSalesman = salesmanData?.salesman || "NPK4225 - IQBAL";
-  const currentOffice = officeName || "S001 - SO SERANG";
-  
-  // State tanggal aktif (default: 2026-10-06)
+export default function DailyMonitoring() {
+  const [selectedCustomer, setSelectedCustomer] = useState(customerList[0]);
+  const [selectedSalesman, setSelectedSalesman] = useState(salesmanList[0]);
   const [selectedDate, setSelectedDate] = useState("2026-10-06");
 
-  const data = getDailyMonitoringData(currentSalesman, currentOffice);
+  const data = getDailyMonitoringData(selectedSalesman, selectedCustomer);
 
-  // Format tanggal untuk teks header
   const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
     weekday: 'long',
     day: '2-digit',
@@ -22,26 +20,59 @@ export default function DailyMonitoring({ salesmanData, officeName }) {
   return (
     <div className="space-y-4 text-slate-800">
       
-      {/* Top Header Banner Info */}
-      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-        <div>
-          <div className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded inline-block font-bold mb-1">DKS MONITORING</div>
-          <h2 className="text-sm font-extrabold text-slate-900">Sales Daily Monitoring & Kunjungan Rute DKS</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            👤 <strong>{data.salesmanInfo}</strong> | 🏢 <strong>{data.soArea}</strong> | 📍 <strong>{data.routeInfo}</strong> | 📅 <strong>{formattedDate}</strong>
-          </p>
-        </div>
+      {/* Top Header & Integrated Dropdown Info */}
+      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <div className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded inline-block font-bold mb-1">DKS MONITORING</div>
+            <h2 className="text-sm font-extrabold text-slate-900">Sales Daily Monitoring & Kunjungan Rute DKS</h2>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
+              <span className="flex items-center gap-1 font-semibold">
+                👤 
+                <select 
+                    value={selectedSalesman} 
+                    onChange={(e) => setSelectedSalesman(e.target.value)}
+                    className="bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[135px]"
+                >
+                    {salesmanList.map((sales, idx) => (
+                    <option key={idx} value={sales}>{sales}</option>
+                    ))}
+                </select>
+                </span>
 
-        {/* Widget Kalender & Tombol Tracking */}
-        <div className="flex items-center gap-2">
-          <CalendarPicker 
-            selectedDate={selectedDate}
-            onDateChange={(newDate) => setSelectedDate(newDate)}
-          />
+                <span className="text-slate-300">|</span>
 
-          <button className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 hover:bg-blue-700 transition">
-            🛰️ Live Route Tracking
-          </button>
+                <span className="flex items-center gap-1 font-semibold">
+                🏢 
+                <select 
+                    value={selectedCustomer} 
+                    onChange={(e) => setSelectedCustomer(e.target.value)}
+                    className="bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[135px]"
+                >
+                    {customerList.map((customer, idx) => (
+                    <option key={idx} value={customer}>{customer}</option>
+                    ))}
+                </select>
+                </span>
+
+              <span className="text-slate-300">|</span>
+              <span>📍 <strong>{data.routeInfo}</strong></span>
+
+              <span className="text-slate-300">|</span>
+              <span>📅 <strong>{formattedDate}</strong></span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <CalendarPicker 
+              selectedDate={selectedDate}
+              onDateChange={(newDate) => setSelectedDate(newDate)}
+            />
+
+            <button className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 hover:bg-blue-700 transition">
+              🛰️ Live Route Tracking
+            </button>
+          </div>
         </div>
       </div>
 
