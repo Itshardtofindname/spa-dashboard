@@ -1,7 +1,23 @@
-import { dailyMonitoringData } from '../data/dailyMonitoringData';
+import { useState } from 'react';
+import { getDailyMonitoringData } from '../data/dailyMonitoringData';
+import CalendarPicker from './CalendarPicker'; // <-- Impor kalender grid
 
-export default function DailyMonitoring() {
-  const data = dailyMonitoringData;
+export default function DailyMonitoring({ salesmanData, officeName }) {
+  const currentSalesman = salesmanData?.salesman || "NPK4225 - IQBAL";
+  const currentOffice = officeName || "S001 - SO SERANG";
+  
+  // State tanggal aktif (default: 2026-10-06)
+  const [selectedDate, setSelectedDate] = useState("2026-10-06");
+
+  const data = getDailyMonitoringData(currentSalesman, currentOffice);
+
+  // Format tanggal untuk teks header
+  const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
 
   return (
     <div className="space-y-4 text-slate-800">
@@ -12,65 +28,58 @@ export default function DailyMonitoring() {
           <div className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded inline-block font-bold mb-1">DKS MONITORING</div>
           <h2 className="text-sm font-extrabold text-slate-900">Sales Daily Monitoring & Kunjungan Rute DKS</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            👤 <strong>{data.salesmanInfo}</strong> | 🏢 <strong>{data.soArea}</strong> | 📍 <strong>{data.routeInfo}</strong> | 📅 <strong>{data.date}</strong>
+            👤 <strong>{data.salesmanInfo}</strong> | 🏢 <strong>{data.soArea}</strong> | 📍 <strong>{data.routeInfo}</strong> | 📅 <strong>{formattedDate}</strong>
           </p>
         </div>
+
+        {/* Widget Kalender & Tombol Tracking */}
         <div className="flex items-center gap-2">
-          <button className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded font-semibold hover:bg-slate-900">Hari Ini</button>
-          <button className="bg-white border text-slate-700 text-xs px-3 py-1.5 rounded font-semibold hover:bg-slate-50">Kemarin</button>
-          <button className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-semibold flex items-center gap-1">
+          <CalendarPicker 
+            selectedDate={selectedDate}
+            onDateChange={(newDate) => setSelectedDate(newDate)}
+          />
+
+          <button className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 hover:bg-blue-700 transition">
             🛰️ Live Route Tracking
           </button>
         </div>
       </div>
 
-      {/* KPI Summary Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        
-        {/* Card 1 */}
-        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm space-y-1">
-          <span className="text-[10px] text-gray-500 font-bold uppercase">Kunjungan On-Track</span>
-          <div className="text-xl font-extrabold text-blue-600">{data.summaryCards.kunjunganOnTrack.count}</div>
-          <div className="text-[11px] font-semibold text-emerald-600">{data.summaryCards.kunjunganOnTrack.percentage}</div>
-          <p className="text-[10px] text-gray-400">{data.summaryCards.kunjunganOnTrack.sub}</p>
+      {/* SUMMARY SALESMAN & TARGET PENCAPAIAN */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+        <div className="border-r border-slate-700 pr-2">
+          <span className="text-slate-400 block text-[10px] uppercase font-bold">Progress Kunjungan Toko</span>
+          <div className="text-xl font-extrabold text-white mt-1">{data.summaryCards.kunjunganOnTrack.count} <span className="text-xs font-normal text-slate-300">Toko</span></div>
+          <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden mt-2">
+            <div className="bg-blue-500 h-full w-[70%]"></div>
+          </div>
+          <span className="text-[10px] text-blue-300 mt-1 block">70% Selesai (1 Sedang Visit, 2 Menunggu)</span>
         </div>
 
-        {/* Card 2 */}
-        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm space-y-1">
-          <span className="text-[10px] text-gray-500 font-bold uppercase">Omzet Harian</span>
-          <div className="text-xl font-extrabold text-slate-900">{data.summaryCards.omzetHarian.value} <span className="text-xs">{data.summaryCards.omzetHarian.unit}</span></div>
-          <div className="text-[11px] font-semibold text-emerald-600">{data.summaryCards.omzetHarian.capai}</div>
-          <p className="text-[10px] text-gray-400">{data.summaryCards.omzetHarian.target} • {data.summaryCards.omzetHarian.sisa}</p>
+        <div className="border-r border-slate-700 pr-2">
+          <span className="text-slate-400 block text-[10px] uppercase font-bold">Realisasi Omzet Harian</span>
+          <div className="text-xl font-extrabold text-emerald-400 mt-1">{data.summaryCards.omzetHarian.value} {data.summaryCards.omzetHarian.unit}</div>
+          <p className="text-[11px] text-slate-300 mt-1">Target: Rp 35.000.000 <span className="text-emerald-400 font-bold">({data.summaryCards.omzetHarian.capai})</span></p>
+          <span className="text-[10px] text-amber-300 block">{data.summaryCards.omzetHarian.sisa}</span>
         </div>
 
-        {/* Card 3 */}
-        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm space-y-1">
-          <span className="text-[10px] text-gray-500 font-bold uppercase">Efektifitas Waktu</span>
-          <div className="text-xl font-extrabold text-slate-900">{data.summaryCards.efektifitasWaktu.value} <span className="text-xs">{data.summaryCards.efektifitasWaktu.unit}</span></div>
-          <div className="text-[11px] font-semibold text-purple-600">{data.summaryCards.efektifitasWaktu.status}</div>
-          <p className="text-[10px] text-gray-400">{data.summaryCards.efektifitasWaktu.target}</p>
+        <div className="border-r border-slate-700 pr-2">
+          <span className="text-slate-400 block text-[10px] uppercase font-bold">Efektivitas Waktu & DKS</span>
+          <div className="text-xl font-extrabold text-purple-300 mt-1">{data.summaryCards.efektifitasWaktu.value} <span className="text-xs font-normal text-slate-300">/ Outlet</span></div>
+          <p className="text-[11px] text-slate-300 mt-1">Skor DKS: <strong>3.00 (High Discipline)</strong></p>
+          <span className="text-[10px] text-emerald-400 block">100% Valid Sesuai Rute GPS</span>
         </div>
 
-        {/* Card 4 */}
-        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm space-y-1">
-          <span className="text-[10px] text-gray-500 font-bold uppercase">Cross-Sell Hit Rate</span>
-          <div className="text-xl font-extrabold text-emerald-600">{data.summaryCards.crossSellHitRate.value}</div>
-          <div className="text-[11px] font-semibold text-slate-700">{data.summaryCards.crossSellHitRate.hit}</div>
-          <p className="text-[10px] text-gray-400">{data.summaryCards.crossSellHitRate.items}</p>
+        <div>
+          <span className="text-slate-400 block text-[10px] uppercase font-bold">Cross-Sell & Status SO</span>
+          <div className="text-xl font-extrabold text-amber-300 mt-1">{data.summaryCards.crossSellHitRate.value} <span className="text-xs font-normal text-slate-300">Hit Rate</span></div>
+          <p className="text-[11px] text-slate-300 mt-1">6 Faktur Valid • Plafon Aman</p>
+          <span className="text-[10px] text-blue-300 block">Status: Bosnet & SAP Connected</span>
         </div>
-
-        {/* Card 5 */}
-        <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm space-y-1 col-span-2 md:col-span-1">
-          <span className="text-[10px] text-gray-500 font-bold uppercase">Status SO Bosnet</span>
-          <div className="text-xl font-extrabold text-slate-900">{data.summaryCards.statusSoBosnet.valid}</div>
-          <div className="text-[11px] font-semibold text-emerald-600">Plafon 100% Aman</div>
-          <p className="text-[10px] text-gray-400">Clear & Verifikasi Valid</p>
-        </div>
-
       </div>
 
       {/* Main Content Grid: Left (Call Plan Timeline) & Right (SKU Fokus & Rewards) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
         {/* LEFT: JADWAL & CALL PLAN RUTE DKS (Col 7) */}
         <div className="lg:col-span-7 bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
@@ -81,7 +90,6 @@ export default function DailyMonitoring() {
             <span className="text-[11px] text-gray-500 font-medium">Semua (10) • Selesai (7) • Sisa (3)</span>
           </div>
 
-          {/* Timeline List */}
           <div className="space-y-3">
             {data.callPlanRutes.map((rute, idx) => (
               <div 
@@ -107,14 +115,13 @@ export default function DailyMonitoring() {
                 <div className="mt-2 pt-2 border-t border-slate-200/60 flex justify-between items-center text-[11px]">
                   <div className="flex items-center gap-3 text-slate-500">
                     <span>📍 {rute.gps}</span>
-                    <span>⏱️️ {rute.durasi || rute.notes}</span>
+                    <span>⏱ {rute.durasi || rute.notes}</span>
                   </div>
                   {rute.omzet && (
                     <span className="font-extrabold text-blue-600">{rute.omzet}</span>
                   )}
                 </div>
 
-                {/* Extra box untuk active visit */}
                 {rute.recommendation && (
                   <div className="mt-2 bg-amber-50 border border-amber-200 text-amber-900 p-2 rounded text-[11px] flex justify-between items-center">
                     <span>💡 <strong>Rekomendasi SPA:</strong> {rute.recommendation}</span>
@@ -129,7 +136,7 @@ export default function DailyMonitoring() {
         </div>
 
         {/* RIGHT: SKU FOKUS HARIAN & REWARD (Col 5) */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-20">
           
           {/* SKU Fokus Harian */}
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
@@ -181,8 +188,8 @@ export default function DailyMonitoring() {
             </div>
 
             <div className="text-[11px] space-y-2 bg-blue-50/50 p-2.5 rounded border border-blue-100">
-              <p className="font-bold text-blue-900">📌 Toko Sentosa Motor (Current):</p>
-              <p className="text-gray-600">Plafon kredit tersedia Rp 14.500.000. Cukup untuk akumulasi draft order Rp 3.200.000 tanpa eskalasi HO.</p>
+              <p className="font-bold text-blue-900">📌 Toko Aktif Saat Ini:</p>
+              <p className="text-gray-600">Plafon kredit tersedia aman. Cukup untuk akumulasi draft order tanpa eskalasi HO.</p>
             </div>
           </div>
 
