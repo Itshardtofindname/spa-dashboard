@@ -37,102 +37,237 @@ export const salesmanList = [
   "NPK4906 - DAMAR"
 ];
 
-export const databaseSales = [
-  // 1. Data untuk Iqbal
-  {
-    salesOffice: "S001 - SO SERANG",
-    grupProduct: "TL1 - AP2",
-    salesman: "NPK4225 - IQBAL",
-    identity: {
-      nama: "IQBAL",
-      npk: "4225",
-      jabatan: "Field Salesman Domestic",
-      wilayah: "SO Serang",
-      totalOutlet: "42 Outlet Aktif",
-      rankSo: "#3 dari 18 Sales",
-      avgAchievement: "82.4%"
-    },
-    finalGrade: {
-      score: "11,5",
-      status: "HIGH",
-      batasLulus: "≥ 9.0",
-      keterangan: "Performa individu sangat baik dan melampaui target standar operasional di berbagai pilar."
-    },
-    breakdownPilar: { pilar1: "2.0", pilar2: "7.5", pilar3: "2.0" },
-    scorecard: [
-      { aspect: "RESULT", indicator: "Sales Achievement & Growth", statusColor: "bg-amber-600", statusText: "MED (2)", value: "2.0" },
-      { aspect: "STRATEGIC ALIGNMENT", indicator: "Cross Selling - Up Selling", statusColor: "bg-emerald-600", statusText: "HIGH (3)", value: "3.0" },
-      { aspect: "STRATEGIC ALIGNMENT", indicator: "Active Outlet (OA)", statusColor: "bg-emerald-600", statusText: "HIGH (3)", value: "3.0" },
-      { aspect: "STRATEGIC ALIGNMENT", indicator: "Repeat Order", statusColor: "bg-amber-600", statusText: "MED (2)", value: "2.0" },
-      { aspect: "PROCESS", indicator: "DKS (Daftar Kunjungan Sales)", statusColor: "bg-amber-600", statusText: "MED (2)", value: "2.0" }
-    ],
-    trackRecord: [
-      {
-        territory: "SO Serang",
-        jan: "80%", feb: "82%", mar: "85%", q1Avg: "82%",
-        apr: "83%", mei: "84%", jun: "86%", jul: "85%", aug: "88%",
-        sep: "AKTIF",
-        salesScore: "2.0", daScore: "3.0", rOrder: "2.0", crossSell: "3.0", dks: "2.0",
-        avgTotal: "11,5", rank: "3"
-      }
-    ],
-    repeatOrderLow: [
-      { store: "Toko Berkah Jaya", detail: "Serang Kota • PO Terakhir: 18 Ags" }
-    ],
-    supervisorNotes: {
-      notes: "Iqbal menunjukkan konsistensi tinggi pada area Active Outlet dan Cross Selling.",
-      recommendation: ["Pertahankan kunjungan rutin mingguan."]
-    }
-  },
+const createSalesData = (salesOffice, grupProduct, salesman, index) => {
+  const [npkRaw, ...nameParts] = salesman.split(" - ");
+  const npk = npkRaw.replace("NPK", "");
+  const nama = nameParts.join(" ");
 
-  // 2. Data untuk Seno Aji
-  {
-    salesOffice: "S001 - SO SERANG",
-    grupProduct: "TL1 - AP2",
-    salesman: "NPK1584 - SENO AJI",
+  const officeName = salesOffice
+    .replace(/^S\d+\s*-\s*/, "")
+    .replace("SO ", "");
+
+  const achievement = 70 + ((index * 7) % 25);
+  const salesScore =
+    achievement >= 85 ? "3.0" :
+    achievement >= 75 ? "2.0" :
+    "1.0";
+
+  const activeOutletScore =
+    index % 3 === 0 ? "3.0" :
+    index % 3 === 1 ? "2.0" :
+    "1.0";
+
+  const repeatOrderScore =
+    index % 2 === 0 ? "2.0" : "1.0";
+
+  const crossSellScore =
+    index % 3 === 0 ? "3.0" : "2.0";
+
+  const dksScore =
+    index % 4 === 0 ? "3.0" : "2.0";
+
+  const finalScore =
+    Number(salesScore) +
+    Number(activeOutletScore) +
+    Number(repeatOrderScore) +
+    Number(crossSellScore) +
+    Number(dksScore);
+
+  const finalStatus =
+    finalScore >= 11
+      ? "HIGH"
+      : finalScore >= 9
+        ? "MEDIUM"
+        : "LOW";
+
+  return {
+    salesOffice,
+    grupProduct,
+    salesman,
+
     identity: {
-      nama: "SENO AJI SOBIRIN",
-      npk: "1584",
+      nama,
+      npk,
       jabatan: "Field Salesman Domestic",
-      wilayah: "SO Jakarta",
-      totalOutlet: "48 Outlet Aktif",
-      rankSo: "#1 dari 18 Sales",
-      avgAchievement: "76.9%"
+      wilayah: `SO ${officeName}`,
+      totalOutlet: `${30 + (index % 25)} Outlet Aktif`,
+      rankSo: `#${(index % 18) + 1} dari 18 Sales`,
+      avgAchievement: `${achievement}.0%`
     },
+
     finalGrade: {
-      score: "10,0",
-      status: "MEDIUM",
+      score: finalScore.toFixed(1).replace(".", ","),
+      status: finalStatus,
       batasLulus: "≥ 9.0",
-      keterangan: "Performa individu berada pada kategori MEDIUM. Memenuhi target standar operasional, namun pilar RESULT memerlukan eskalasi intensif di bulan depan."
+      keterangan:
+        finalStatus === "HIGH"
+          ? "Performa individu sangat baik dan melampaui target standar operasional."
+          : finalStatus === "MEDIUM"
+            ? "Performa individu memenuhi standar operasional, namun masih terdapat beberapa pilar yang perlu ditingkatkan."
+            : "Performa individu masih di bawah standar dan memerlukan perhatian serta evaluasi lebih lanjut."
     },
-    breakdownPilar: { pilar1: "1.0", pilar2: "7.0", pilar3: "2.0" },
+
+    breakdownPilar: {
+      pilar1: salesScore,
+      pilar2: (
+        Number(activeOutletScore) +
+        Number(repeatOrderScore) +
+        Number(crossSellScore)
+      ).toFixed(1),
+      pilar3: dksScore
+    },
+
     scorecard: [
-      { aspect: "RESULT", indicator: "Sales Achievement & Growth", statusColor: "bg-red-600", statusText: "LOW (1)", value: "1.0" },
-      { aspect: "STRATEGIC ALIGNMENT", indicator: "Cross Selling - Up Selling", statusColor: "bg-emerald-600", statusText: "HIGH (3)", value: "3.0" },
-      { aspect: "STRATEGIC ALIGNMENT", indicator: "Active Outlet (OA)", statusColor: "bg-amber-600", statusText: "MED (2)", value: "2.0" },
-      { aspect: "STRATEGIC ALIGNMENT", indicator: "Repeat Order", statusColor: "bg-amber-600", statusText: "MED (2)", value: "2.0" },
-      { aspect: "PROCESS", indicator: "DKS (Daftar Kunjungan Sales)", statusColor: "bg-amber-600", statusText: "MED (2)", value: "2.0" }
-    ],
-    trackRecord: [
       {
-        territory: "SO Jakarta",
-        jan: "-", feb: "-", mar: "-", q1Avg: "-",
-        apr: "-", mei: "-", jun: "-", jul: "-", aug: "-",
-        sep: "AKTIF",
-        salesScore: "1.0", daScore: "2.0", rOrder: "2.0", crossSell: "3.0", dks: "2.0",
-        avgTotal: "10,0", rank: "1"
+        aspect: "RESULT",
+        indicator: "Sales Achievement & Growth",
+        statusColor:
+          salesScore === "3.0"
+            ? "bg-emerald-600"
+            : salesScore === "2.0"
+              ? "bg-amber-600"
+              : "bg-red-600",
+        statusText:
+          salesScore === "3.0"
+            ? "HIGH (3)"
+            : salesScore === "2.0"
+              ? "MED (2)"
+              : "LOW (1)",
+        value: salesScore
+      },
+      {
+        aspect: "STRATEGIC ALIGNMENT",
+        indicator: "Cross Selling - Up Selling",
+        statusColor:
+          crossSellScore === "3.0"
+            ? "bg-emerald-600"
+            : "bg-amber-600",
+        statusText:
+          crossSellScore === "3.0"
+            ? "HIGH (3)"
+            : "MED (2)",
+        value: crossSellScore
+      },
+      {
+        aspect: "STRATEGIC ALIGNMENT",
+        indicator: "Active Outlet (OA)",
+        statusColor:
+          activeOutletScore === "3.0"
+            ? "bg-emerald-600"
+            : activeOutletScore === "2.0"
+              ? "bg-amber-600"
+              : "bg-red-600",
+        statusText:
+          activeOutletScore === "3.0"
+            ? "HIGH (3)"
+            : activeOutletScore === "2.0"
+              ? "MED (2)"
+              : "LOW (1)",
+        value: activeOutletScore
+      },
+      {
+        aspect: "STRATEGIC ALIGNMENT",
+        indicator: "Repeat Order",
+        statusColor:
+          repeatOrderScore === "2.0"
+            ? "bg-amber-600"
+            : "bg-red-600",
+        statusText:
+          repeatOrderScore === "2.0"
+            ? "MED (2)"
+            : "LOW (1)",
+        value: repeatOrderScore
+      },
+      {
+        aspect: "PROCESS",
+        indicator: "DKS (Daftar Kunjungan Sales)",
+        statusColor:
+          dksScore === "3.0"
+            ? "bg-emerald-600"
+            : "bg-amber-600",
+        statusText:
+          dksScore === "3.0"
+            ? "HIGH (3)"
+            : "MED (2)",
+        value: dksScore
       }
     ],
-    repeatOrderLow: [
-      { store: "Toko Rejeki Jaya", detail: "Kuningan Barat • PO Terakhir: 12 Ags" },
-      { store: "TB Sinar Makmur", detail: "Mampang Prapatan • PO Terakhir: 19 Ags" }
+
+    trackRecord: [
+      {
+        territory: `SO ${officeName}`,
+        jan: `${70 + (index % 15)}%`,
+        feb: `${72 + (index % 15)}%`,
+        mar: `${75 + (index % 15)}%`,
+        q1Avg: `${72 + (index % 15)}%`,
+        apr: `${74 + (index % 15)}%`,
+        mei: `${76 + (index % 15)}%`,
+        jun: `${78 + (index % 15)}%`,
+        jul: `${80 + (index % 10)}%`,
+        aug: `${82 + (index % 8)}%`,
+        sep: "AKTIF",
+        salesScore,
+        daScore: activeOutletScore,
+        rOrder: repeatOrderScore,
+        crossSell: crossSellScore,
+        dks: dksScore,
+        avgTotal: finalScore.toFixed(1).replace(".", ","),
+        rank: `${(index % 18) + 1}`
+      }
     ],
+
+    repeatOrderLow: [
+      {
+        store: `Outlet ${nama}`,
+        detail: `${officeName} • PO Terakhir: ${10 + (index % 20)} Ags`
+      }
+    ],
+
     supervisorNotes: {
-      notes: "Seno Aji Sobirin mempertahankan kedisiplinan rule (DKS) yang sangat solid dan cross selling sempurna. Namun, volume achievement bulan September tertahan pada level 85%.",
-      recommendation: [
-        "Prioritaskan 16 outlet pasif untuk memicu Repeat Order minimal 2 karton.",
-        "Tawarkan skema term of payment khusus untuk menaikkan skor RESULT ke range MEDIUM / HIGH (≥ 2.0)."
-      ]
+      notes:
+        finalStatus === "HIGH"
+          ? `${nama} menunjukkan performa yang konsisten dan mampu memenuhi target pada beberapa pilar utama.`
+          : finalStatus === "MEDIUM"
+            ? `${nama} memiliki performa yang cukup baik namun masih terdapat beberapa indikator yang perlu ditingkatkan.`
+            : `${nama} membutuhkan evaluasi dan pendampingan lebih lanjut untuk meningkatkan pencapaian.`,
+
+      recommendation:
+        finalStatus === "HIGH"
+          ? [
+              "Pertahankan performa dan kunjungan rutin.",
+              "Tingkatkan konsistensi repeat order."
+            ]
+          : finalStatus === "MEDIUM"
+            ? [
+                "Tingkatkan active outlet.",
+                "Fokus meningkatkan repeat order.",
+                "Pertahankan kedisiplinan DKS."
+              ]
+            : [
+                "Lakukan evaluasi terhadap outlet yang pasif.",
+                "Tingkatkan frekuensi kunjungan.",
+                "Fokus pada peningkatan sales achievement."
+              ]
     }
-  }
-];
+  };
+};
+
+export const databaseSales = [];
+
+let index = 0;
+
+salesOfficeList.forEach((salesOffice) => {
+  grupProductList.forEach((grupProduct) => {
+    salesmanList.forEach((salesman) => {
+      databaseSales.push(
+        createSalesData(
+          salesOffice,
+          grupProduct,
+          salesman,
+          index
+        )
+      );
+      index++;
+    });
+  });
+});
