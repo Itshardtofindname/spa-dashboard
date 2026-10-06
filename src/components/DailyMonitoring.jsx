@@ -10,13 +10,6 @@ export default function DailyMonitoring() {
 
   const data = getDailyMonitoringData(selectedSalesman, selectedCustomer);
 
-  const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  });
-
   return (
     <div className="space-y-4 text-slate-800">
       
@@ -54,12 +47,6 @@ export default function DailyMonitoring() {
                     ))}
                 </select>
                 </span>
-
-              <span className="text-slate-300">|</span>
-              <span>📍 <strong>{data.routeInfo}</strong></span>
-
-              <span className="text-slate-300">|</span>
-              <span>📅 <strong>{formattedDate}</strong></span>
             </div>
           </div>
 
@@ -76,7 +63,6 @@ export default function DailyMonitoring() {
         </div>
       </div>
 
-      {/* SUMMARY SALESMAN & TARGET PENCAPAIAN */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
         <div className="border-r border-slate-700 pr-2">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Progress Kunjungan Toko</span>
@@ -90,22 +76,22 @@ export default function DailyMonitoring() {
         <div className="border-r border-slate-700 pr-2">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Realisasi Omzet Harian</span>
           <div className="text-xl font-extrabold text-emerald-400 mt-1">{data.summaryCards.omzetHarian.value} {data.summaryCards.omzetHarian.unit}</div>
-          <p className="text-[11px] text-slate-300 mt-1">Target: Rp 35.000.000 <span className="text-emerald-400 font-bold">({data.summaryCards.omzetHarian.capai})</span></p>
+          <p className="text-[11px] text-slate-300 mt-1">Target: Rp 35.000.000 <span className="text-emerald-400 font-bold">(80% tercapai)</span></p>
           <span className="text-[10px] text-amber-300 block">{data.summaryCards.omzetHarian.sisa}</span>
         </div>
 
         <div className="border-r border-slate-700 pr-2">
-          <span className="text-slate-400 block text-[10px] uppercase font-bold">Efektivitas Waktu & DKS</span>
-          <div className="text-xl font-extrabold text-purple-300 mt-1">{data.summaryCards.efektifitasWaktu.value} <span className="text-xs font-normal text-slate-300">/ Outlet</span></div>
-          <p className="text-[11px] text-slate-300 mt-1">Skor DKS: <strong>3.00 (High Discipline)</strong></p>
-          <span className="text-[10px] text-emerald-400 block">100% Valid Sesuai Rute GPS</span>
+            <span className="text-slate-400 block text-[10px] uppercase font-bold">Keakuratan & Validasi GPS</span>
+            <div className="text-xl font-extrabold text-cyan-400 mt-1">98.5% <span className="text-xs font-normal text-slate-300">Akurasi</span></div>
+            <p className="text-[11px] text-slate-300 mt-1">Radius Check-In: <strong>±3 Meter (High)</strong></p>
+            <span className="text-[10px] text-emerald-400 block">100% Valid Sesuai Titik Rute DKS</span>
         </div>
 
         <div>
-          <span className="text-slate-400 block text-[10px] uppercase font-bold">Cross-Sell & Status SO</span>
-          <div className="text-xl font-extrabold text-amber-300 mt-1">{data.summaryCards.crossSellHitRate.value} <span className="text-xs font-normal text-slate-300">Hit Rate</span></div>
-          <p className="text-[11px] text-slate-300 mt-1">6 Faktur Valid • Plafon Aman</p>
-          <span className="text-[10px] text-blue-300 block">Status: Bosnet & SAP Connected</span>
+            <span className="text-slate-400 block text-[10px] uppercase font-bold">Target Pembelian</span>
+            <div className="text-xl font-extrabold text-amber-300 mt-1">95.0% <span className="text-xs font-normal text-slate-300">Realisasi</span></div>
+            <p className="text-[11px] text-slate-300 mt-1">Target Min: 90.0% <span className="text-emerald-400 font-bold">(Tercapai Optimal)</span></p>
+            <span className="text-[10px] text-emerald-400 block">Status: Sesuai Ketentuan PO</span>
         </div>
       </div>
 
@@ -146,7 +132,7 @@ export default function DailyMonitoring() {
                 <div className="mt-2 pt-2 border-t border-slate-200/60 flex justify-between items-center text-[11px]">
                   <div className="flex items-center gap-3 text-slate-500">
                     <span>📍 {rute.gps}</span>
-                    <span>⏱ {rute.durasi || rute.notes}</span>
+                    <span><strong>Durasi:</strong> {rute.durasi || rute.notes}</span>
                   </div>
                   {rute.omzet && (
                     <span className="font-extrabold text-blue-600">{rute.omzet}</span>
