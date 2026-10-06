@@ -1,68 +1,109 @@
 import { useState } from 'react';
 import { getDailyMonitoringData } from '../data/dailyMonitoringData';
 import { customerList, salesmanList } from '../data/dataSales';
-import CalendarPicker from './CalendarPicker';
+// import CalendarPicker from './CalendarPicker';
 
 export default function DailyMonitoring() {
   const [selectedCustomer, setSelectedCustomer] = useState(customerList[0]);
   const [selectedSalesman, setSelectedSalesman] = useState(salesmanList[0]);
-  const [selectedDate, setSelectedDate] = useState("2026-10-06");
+  
+  // State Date-to-Date (Default: 01 Okt 2026 s/d 06 Okt 2026)
+  const [startDate, setStartDate] = useState("2026-10-01");
+  const [endDate, setEndDate] = useState("2026-10-06");
 
   const data = getDailyMonitoringData(selectedSalesman, selectedCustomer);
+
+  const formatLocalDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 
   return (
     <div className="space-y-4 text-slate-800">
       
-      {/* Top Header & Integrated Dropdown Info */}
+      {/* Top Header & Integrated Controls */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <div>
-            <div className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded inline-block font-bold mb-1">DKS MONITORING</div>
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 w-full">
+          
+          {/* Sisi Kiri: Judul & Informasi Dropdown */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded inline-block font-bold">DKS MONITORING</div>
             <h2 className="text-sm font-extrabold text-slate-900">Sales Daily Monitoring & Kunjungan Rute DKS</h2>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
+            
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
               <span className="flex items-center gap-1 font-semibold">
                 👤 
                 <select 
-                    value={selectedSalesman} 
-                    onChange={(e) => setSelectedSalesman(e.target.value)}
-                    className="bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[135px]"
+                  value={selectedSalesman} 
+                  onChange={(e) => setSelectedSalesman(e.target.value)}
+                  className="bg-slate-50 border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[180px] truncate"
                 >
-                    {salesmanList.map((sales, idx) => (
+                  {salesmanList.map((sales, idx) => (
                     <option key={idx} value={sales}>{sales}</option>
-                    ))}
+                  ))}
                 </select>
-                </span>
+              </span>
 
-                <span className="text-slate-300">|</span>
+              <span className="text-slate-300">|</span>
 
-                <span className="flex items-center gap-1 font-semibold">
+              <span className="flex items-center gap-1 font-semibold">
                 🏢 
                 <select 
-                    value={selectedCustomer} 
-                    onChange={(e) => setSelectedCustomer(e.target.value)}
-                    className="bg-slate-50 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[135px]"
+                  value={selectedCustomer} 
+                  onChange={(e) => setSelectedCustomer(e.target.value)}
+                  className="bg-slate-50 border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[180px] truncate"
                 >
-                    {customerList.map((customer, idx) => (
+                  {customerList.map((customer, idx) => (
                     <option key={idx} value={customer}>{customer}</option>
-                    ))}
+                  ))}
                 </select>
-                </span>
+              </span>
             </div>
           </div>
 
+          {/* Sisi Kanan: Date-to-Date Ringkas & Tombol Live Tracking Sejajar */}
           <div className="flex items-center gap-2">
-            <CalendarPicker 
-              selectedDate={selectedDate}
-              onDateChange={(newDate) => setSelectedDate(newDate)}
-            />
+            
+            {/* Input Date-to-Date Tanpa Ikon & Bisa Ditekan di Mana Saja */}
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+              <span className="text-slate-500 font-bold">Periode:</span>
+              
+              {/* Tanggal Awal */}
+              <input 
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer relative"
+              />
+              
+              <span className="text-slate-400 font-medium px-0.5">s/d</span>
+              
+              {/* Tanggal Akhir */}
+              <input 
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer relative"
+              />
 
-            <button className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 hover:bg-blue-700 transition">
-              🛰️ Live Route Tracking
+              <button className="bg-blue-600 text-white px-2.5 py-1 rounded font-bold text-[10px] hover:bg-blue-700 transition ml-1">
+                Cari
+              </button>
+            </div>
+
+            <button className="bg-blue-600 text-white text-xs px-3.5 py-2 rounded-lg font-semibold flex items-center gap-1 hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+              🛰️ Live Tracking
             </button>
+
           </div>
+
         </div>
       </div>
 
+      {/* SUMMARY SALESMAN & TARGET PENCAPAIAN */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
         <div className="border-r border-slate-700 pr-2">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Progress Kunjungan Toko</span>
@@ -76,22 +117,22 @@ export default function DailyMonitoring() {
         <div className="border-r border-slate-700 pr-2">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Realisasi Omzet Harian</span>
           <div className="text-xl font-extrabold text-emerald-400 mt-1">{data.summaryCards.omzetHarian.value} {data.summaryCards.omzetHarian.unit}</div>
-          <p className="text-[11px] text-slate-300 mt-1">Target: Rp 35.000.000 <span className="text-emerald-400 font-bold">(80% tercapai)</span></p>
+          <p className="text-[11px] text-slate-300 mt-1">Target: Rp 35.000.000 <span className="text-emerald-400 font-bold">({data.summaryCards.omzetHarian.capai})</span></p>
           <span className="text-[10px] text-amber-300 block">{data.summaryCards.omzetHarian.sisa}</span>
         </div>
 
         <div className="border-r border-slate-700 pr-2">
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Keakuratan & Validasi GPS</span>
-            <div className="text-xl font-extrabold text-cyan-400 mt-1">98.5% <span className="text-xs font-normal text-slate-300">Akurasi</span></div>
-            <p className="text-[11px] text-slate-300 mt-1">Radius Check-In: <strong>±3 Meter (High)</strong></p>
-            <span className="text-[10px] text-emerald-400 block">100% Valid Sesuai Titik Rute DKS</span>
+          <span className="text-slate-400 block text-[10px] uppercase font-bold">Keakuratan & Validasi GPS</span>
+          <div className="text-xl font-extrabold text-cyan-400 mt-1">98.5% <span className="text-xs font-normal text-slate-300">Akurasi</span></div>
+          <p className="text-[11px] text-slate-300 mt-1">Radius Check-In: <strong>±3 Meter (High)</strong></p>
+          <span className="text-[10px] text-emerald-400 block">100% Valid Sesuai Titik Rute DKS</span>
         </div>
 
         <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Target Pembelian</span>
-            <div className="text-xl font-extrabold text-amber-300 mt-1">95.0% <span className="text-xs font-normal text-slate-300">Realisasi</span></div>
-            <p className="text-[11px] text-slate-300 mt-1">Target Min: 90.0% <span className="text-emerald-400 font-bold">(Tercapai Optimal)</span></p>
-            <span className="text-[10px] text-emerald-400 block">Status: Sesuai Ketentuan PO</span>
+          <span className="text-slate-400 block text-[10px] uppercase font-bold">Target Pembelian</span>
+          <div className="text-xl font-extrabold text-amber-300 mt-1">95.0% <span className="text-xs font-normal text-slate-300">Realisasi</span></div>
+          <p className="text-[11px] text-slate-300 mt-1">Target Min: 90.0% <span className="text-emerald-400 font-bold">(Tercapai)</span></p>
+          <span className="text-[10px] text-emerald-400 block">Status: Sesuai Ketentuan PO</span>
         </div>
       </div>
 
@@ -101,8 +142,8 @@ export default function DailyMonitoring() {
         {/* LEFT: JADWAL & CALL PLAN RUTE DKS (Col 7) */}
         <div className="lg:col-span-7 bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
           <div className="flex justify-between items-center border-b pb-2">
-            <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-2">
-              📅 Jadwal & Call Plan Rute DKS
+            <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-1">
+              📅 Jadwal & Call Plan Rute DKS ({formatLocalDate(startDate)} - {formatLocalDate(endDate)})
             </h3>
             <span className="text-[11px] text-gray-500 font-medium">Semua (10) • Selesai (7) • Sisa (3)</span>
           </div>
@@ -158,7 +199,7 @@ export default function DailyMonitoring() {
           {/* SKU Fokus Harian */}
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
             <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-1">
                 📦 SKU Fokus Harian <span className="text-[10px] font-normal text-gray-500">Target vs Realisasi</span>
               </h3>
             </div>
@@ -185,7 +226,7 @@ export default function DailyMonitoring() {
           {/* Program Vaganza & Reward */}
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
             <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-1">
                 🎁 Program Vaganza & Reward Outlet
               </h3>
               <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">Okt 2026</span>
@@ -213,7 +254,7 @@ export default function DailyMonitoring() {
           {/* Footer Skor DKS Hari Ini */}
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex justify-between items-center">
             <div>
-              <span className="text-[10px] text-gray-500 block uppercase font-bold">SKOR DKS HARI INI</span>
+              <span className="text-[10px] text-gray-500 block uppercase font-bold">SKOR DKS PERIODE</span>
               <span className="text-sm font-extrabold text-slate-900">3.00 (Kategori: High Discipline)</span>
             </div>
             <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded">
