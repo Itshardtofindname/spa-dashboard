@@ -2,7 +2,7 @@ import logoImg from '../assets/logo.png';
 
 export default function Navbar({ salesmanData }) {
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#8B0E48] shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-[#94ABDE] shadow-sm">
       <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-10 w-36 shrink-0 items-center justify-center overflow-hidden">
@@ -14,36 +14,36 @@ export default function Navbar({ salesmanData }) {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold tracking-wide text-white">
+              <span className="text-sm font-bold tracking-wide text-black">
                 SPA
               </span>
               <span className="rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white">
                 V2.6
               </span>
             </div>
-            <p className="hidden truncate text-xs text-slate-200 sm:block">
+            <p className="hidden truncate text-xs text-black sm:block">
               Salesforce Performance Assistance System
             </p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <div className="hidden items-center text-xs text-slate-200 xl:flex">
+          <div className="hidden items-center text-xs text-black xl:flex">
             <span>Sales Domestik</span>
-            <span className="mx-2 text-slate-300">/</span>
+            <span className="mx-2 text-black">/</span>
             <span>Personal Salesman</span>
-            <span className="mx-2 text-slate-300">/</span>
-            <span className="font-semibold text-white">
+            <span className="mx-2 text-black">/</span>
+            <span className="font-semibold text-black">
               {salesmanData?.identity?.nama || "-"}
             </span>
-            <span className="ml-1 text-slate-300">
+            <span className="ml-1 text-black">
               (NPK {salesmanData?.identity?.npk || "-"})
             </span>
           </div>
-          <div className="hidden rounded-lg border border-pink-700 bg-[#740b3c] px-3 py-1.5 text-xs text-slate-200 md:block">
-            <span className="mr-1 text-slate-300">
+          <div className="hidden rounded-lg border border-slate-400 bg-white/50 px-3 py-1.5 text-xs text-black md:block">
+            <span className="mr-1 text-black">
               Periode
             </span>
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-black">
               September 2026
             </span>
           </div>
