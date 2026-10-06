@@ -5,10 +5,11 @@ import ScorecardTable from './components/ScorecardTable';
 import MonthlyTrackRecord from './components/MonthlyTrackRecord';
 import ActionPlanSection from './components/ActionPlanSection';
 import SellingToolkit from './components/SellingToolkit';
+import DailyMonitoring from './components/DailyMonitoring'; // <-- 1. Impor komponen baru
 import { databaseSales, salesOfficeList, grupProductList, salesmanList } from './data/dataSales';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'toolkit', atau 'monitoring'
   const [selectedOffice, setSelectedOffice] = useState(salesOfficeList[0]);
   const [selectedGroup, setSelectedGroup] = useState(grupProductList[0]);
   const [selectedSalesman, setSelectedSalesman] = useState(salesmanList[0]);
@@ -22,26 +23,33 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 font-sans pb-8">
-      {/* Kirim data ke Navbar melalui props salesmanData */}
       <Navbar salesmanData={currentData} />
 
       <main className="max-w-7xl mx-auto p-4 space-y-4">
         
-        <div className="flex gap-2 border-b pb-3">
+        {/* Tombol Navigasi Halaman */}
+        <div className="flex gap-2 border-b pb-3 overflow-x-auto">
           <button 
             onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
           >
             📊 Dashboard Performa Sales
           </button>
           <button 
             onClick={() => setActiveTab('toolkit')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition ${activeTab === 'toolkit' ? 'bg-purple-700 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'toolkit' ? 'bg-purple-700 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
           >
             🛠️ Selling Toolkit (Store Visit)
           </button>
+          <button 
+            onClick={() => setActiveTab('monitoring')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'monitoring' ? 'bg-slate-900 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
+          >
+            📈 Sales Daily Monitoring & Rute DKS
+          </button>
         </div>
 
+        {/* Render Konten Berdasarkan Tab yang Aktif */}
         {activeTab === 'dashboard' ? (
           <>
             <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3">
@@ -90,8 +98,10 @@ export default function App() {
             <MonthlyTrackRecord records={currentData.trackRecord} />
             <ActionPlanSection data={currentData} />
           </>
-        ) : (
+        ) : activeTab === 'toolkit' ? (
           <SellingToolkit />
+        ) : (
+          <DailyMonitoring /> // <-- 2. Tampilkan DailyMonitoring saat tab aktif
         )}
 
       </main>

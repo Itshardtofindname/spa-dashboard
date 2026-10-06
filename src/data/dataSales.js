@@ -6,6 +6,44 @@ export const salesOfficeList = [
   "S005 - SO PUSPAR"
 ];
 
+export const customerList = [
+  "1 - ABADI MOTOR",
+  "2 - HANSEN MOTOR",
+  "3 - MAJU JAYA MOTOR",
+  "4 - R3 MOTOR",
+  "5 - BUDI MULIYA MOTOR",
+];
+
+export const dayList = [
+  "SENIN",
+  "SELASA",
+  "RABU",
+  "KAMIS",
+  "JUMAT",
+  "SABTU"
+];
+
+export const monthList = [
+  "JANUARI",
+  "FEBRUARI",
+  "MARET",
+  "APRIL",
+  "MEI",
+  "JUNI",
+  "JULI",
+  "AGUSTUS",
+  "SEPTEMBER",
+  "OKTOBER",
+  "NOVEMBER",
+  "DESEMBER"
+];
+
+export const yearList = [
+  "2024",
+  "2025",
+  "2026"
+];
+
 export const grupProductList = [
   "TL1 - AP2",
   "TL2 - ATI-ATU-CCO-OA2",
@@ -18,23 +56,23 @@ export const grupProductList = [
 ];
 
 export const salesmanList = [
-  "NPK4225 - IQBAL",
-  "NPK5178 - TEGAR",
-  "NPK4025 - RIO",
-  "NPK2528 - HENDRY",
-  "NPK5060 - ANGGA",
-  "NPK5207 - AZIZ",
-  "NPK4618 - RAVI",
-  "NPK4410 - EDI PURWANTO",
-  "NPK2451 - ABU YAJID",
-  "NPK4402 - BERNARDO",
-  "NPK4413 - LUKMAN",
-  "NPK4947 - RAHMAT",
-  "NPK4405 - KAMAL",
-  "NPK1584 - SENO AJI",
-  "NPK3474 - MARTINO",
-  "NPK4561 - HENDRA",
-  "NPK4906 - DAMAR"
+  "4225 - IQBAL",
+  "5178 - TEGAR",
+  "4025 - RIO",
+  "2528 - HENDRY",
+  "5060 - ANGGA",
+  "5207 - AZIZ",
+  "4618 - RAVI",
+  "4410 - EDI PURWANTO",
+  "2451 - ABU YAJID",
+  "4402 - BERNARDO",
+  "4413 - LUKMAN",
+  "4947 - RAHMAT",
+  "4405 - KAMAL",
+  "1584 - SENO AJI",
+  "3474 - MARTINO",
+  "4561 - HENDRA",
+  "4906 - DAMAR"
 ];
 
 const createSalesData = (salesOffice, grupProduct, salesman, index) => {

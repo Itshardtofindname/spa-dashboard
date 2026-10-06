@@ -1,38 +1,78 @@
+import { useState } from 'react';
 import { sellingToolkitData } from '../data/sellingToolkitData';
+import { salesmanList, customerList, dayList } from '../data/dataSales';
 
 export default function SellingToolkit() {
   const data = sellingToolkitData;
+  const [selectedSalesman, setSelectedSalesman] = useState(salesmanList[0]);
+  const [selectedCustomer, setSelectedCustomer] = useState(customerList[0]);
+  const [selectedDay, setSelectedDay] = useState(dayList[0]);
 
   return (
     <div className="space-y-4 text-slate-800">
-      
-      {/* Top Banner / Navbar Toko */}
       <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-        <div className="flex items-center gap-3">
-          <span className="bg-purple-900 text-white text-[10px] font-bold px-2 py-1 rounded">SELLING TOOLKIT</span>
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Salesman:</span>
+            <select 
+              value={selectedSalesman} 
+              onChange={(e) => setSelectedSalesman(e.target.value)}
+              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+            >
+              {salesmanList.map((salesman, idx) => (
+                <option key={idx} value={salesman}>{salesman}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
-            <div className="text-xs font-bold text-slate-500">Active Customer ID:</div>
-            <div className="text-sm font-extrabold text-blue-600 flex items-center gap-2">
-              {data.storeId} - <span className="text-slate-900">{data.storeName}</span>
-            </div>
+            <span className="text-slate-500 font-semibold">Jadwal Visit:</span>
+            <select 
+              value={selectedDay} 
+              onChange={(e) => setSelectedDay(e.target.value)}
+              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+            >
+              {dayList.map((day, idx) => (
+                <option key={idx} value={day}>{day}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs  text-slate-500 whitespace-nowrap">Active Customer ID:</span>
+            <select 
+              value={selectedCustomer} 
+              onChange={(e) => setSelectedCustomer(e.target.value)}
+              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+            >
+              {customerList.map((customer, idx) => (
+                <option key={idx} value={customer}>{customer}</option>
+              ))}
+            </select>
           </div>
         </div>
 
         <div className="flex items-center gap-4 text-xs">
-          <div>
-            <span className="text-slate-500 font-semibold">Jadwal Visit:</span> <span className="font-bold text-slate-800">{data.visitSchedule}</span>
-          </div>
-          <div className="flex gap-2">
-            <button className="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1">
-              🔄 Sinkronisasi BOSNET / SAP
-            </button>
+          {/* <div>
+            <span className="text-slate-500 font-semibold">Jadwal Visit:</span>
+            <select 
+              value={selectedDay} 
+              onChange={(e) => setSelectedDay(e.target.value)}
+              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+            >
+              {dayList.map((day, idx) => (
+                <option key={idx} value={day}>{day}</option>
+              ))}
+            </select>
+          </div> */}
+          {/* <div className="flex gap-2">
             <button className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1">
               📥 Unduh Rekap Visit
             </button>
             <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1">
               📤 Kirim PO ke Toko
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 

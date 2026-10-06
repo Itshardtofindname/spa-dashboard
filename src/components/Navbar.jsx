@@ -1,5 +1,5 @@
 import logoImg from '../assets/logo.png';
-
+import { monthList, yearList } from '../data/dataSales';
 export default function Navbar({ salesmanData }) {
   return (
     <header className="sticky top-0 z-50 w-full bg-[#94ABDE] shadow-sm">
@@ -16,9 +16,6 @@ export default function Navbar({ salesmanData }) {
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold tracking-wide text-black">
                 SPA
-              </span>
-              <span className="rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white">
-                V2.6
               </span>
             </div>
             <p className="hidden truncate text-xs text-black sm:block">
@@ -44,7 +41,7 @@ export default function Navbar({ salesmanData }) {
               Periode
             </span>
             <span className="font-semibold text-black">
-              September 2026
+              {monthList[8]} {yearList[2]}
             </span>
           </div>
           <button
