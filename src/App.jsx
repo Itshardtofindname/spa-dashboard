@@ -7,6 +7,7 @@ import ActionPlanSection from './components/ActionPlanSection';
 import SellingToolkit from './components/SellingToolkit';
 import DailyMonitoring from './components/DailyMonitoring';
 import LoginPage from './components/LoginPage'; // <-- Impor halaman login
+import WeeklyMonthlySummary from './components/WeeklyMonthlySummary';
 import { databaseSales, salesOfficeList, grupProductList, salesmanList } from './data/dataSales';
 
 export default function App() {
@@ -56,6 +57,12 @@ export default function App() {
             className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'monitoring' ? 'bg-slate-900 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
           >
             📈 Sales Daily Monitoring & Rute DKS
+          </button>
+          <button 
+            onClick={() => setActiveTab('summary')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'summary' ? 'bg-indigo-600 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
+          >
+            📋 Weekly & Monthly Summary
           </button>
         </div>
 
@@ -110,10 +117,11 @@ export default function App() {
           </>
         ) : activeTab === 'toolkit' ? (
           <SellingToolkit />
+        ) : activeTab === 'monitoring' ? (
+          <DailyMonitoring />
         ) : (
-          <DailyMonitoring salesmanData={currentData} officeName={selectedOffice} />
+          <WeeklyMonthlySummary />
         )}
-
       </main>
     </div>
   );
