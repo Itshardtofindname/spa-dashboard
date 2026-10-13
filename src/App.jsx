@@ -1,128 +1,49 @@
 import { useState } from 'react';
 import Navbar from './components/Navbar';
-import SalesProfileCard from './components/SalesProfileCard';
-import ScorecardTable from './components/ScorecardTable';
-import MonthlyTrackRecord from './components/MonthlyTrackRecord';
-import ActionPlanSection from './components/ActionPlanSection';
+import Sidebar from './components/Sidebar';
+import LoginPage from './components/LoginPage';
 import SellingToolkit from './components/SellingToolkit';
 import DailyMonitoring from './components/DailyMonitoring';
-import LoginPage from './components/LoginPage'; // <-- Impor halaman login
-import WeeklyMonthlySummary from './components/WeeklyMonthlySummary';
-import { databaseSales, salesOfficeList, grupProductList, salesmanList } from './data/dataSales';
+import WeeklyMonthlySummary from './components/WeeklyMonthlySummary'; // <-- Import ini
+import LembarKerjaSalesman from './components/lks/LembarKerjaSalesman';
+import DashboardPerformance from './components/dashboard/DashboardPerformance';
 
 export default function App() {
-  // State Autentikasi (Default false agar wajib login dulu)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activePage, setActivePage] = useState('dashboard');
 
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedOffice, setSelectedOffice] = useState(salesOfficeList[0]);
-  const [selectedGroup, setSelectedGroup] = useState(grupProductList[0]);
-  const [selectedSalesman, setSelectedSalesman] = useState(salesmanList[0]);
-
-  const currentData = databaseSales.find(
-    item => 
-      item.salesOffice === selectedOffice &&
-      item.grupProduct === selectedGroup &&
-      item.salesman === selectedSalesman
-  ) || databaseSales[0];
-
-  // Jika belum login, tampilkan komponen LoginPage
   if (!isLoggedIn) {
     return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
   }
 
+  const renderContent = () => {
+    switch (activePage) {
+      case 'dashboard':
+        return <DashboardPerformance />;
+      case 'sales-monitoring':
+        return <SellingToolkit />;
+      case 'DKS':
+        return <DailyMonitoring />;
+      case 'summary':
+        return <WeeklyMonthlySummary />; // <-- Untuk Weekly & Monthly Summary
+      case 'lks':
+        return <LembarKerjaSalesman />; // <-- KUNCI PERBAIKAN: Untuk Lembar Kerja Salesman
+      default:
+        return <DashboardPerformance />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 font-sans pb-8">
-      {/* Kirim fungsi onLogout ke Navbar */}
-      <Navbar salesmanData={currentData} onLogout={() => setIsLoggedIn(false)} />
+    <div className="min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col">
+      <Navbar onLogout={() => setIsLoggedIn(false)} />
 
-      <main className="max-w-7xl mx-auto p-4 space-y-4">
-        
-        {/* Tombol Navigasi Halaman */}
-        <div className="flex gap-2 border-b pb-3 overflow-x-auto">
-          <button 
-            onClick={() => setActiveTab('dashboard')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
-          >
-            📊 Dashboard Performa Sales
-          </button>
-          <button 
-            onClick={() => setActiveTab('toolkit')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'toolkit' ? 'bg-purple-700 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
-          >
-            🛠️️ Selling Toolkit (Store Visit)
-          </button>
-          <button 
-            onClick={() => setActiveTab('monitoring')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'monitoring' ? 'bg-slate-900 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
-          >
-            📈 Sales Daily Monitoring & Rute DKS
-          </button>
-          <button 
-            onClick={() => setActiveTab('summary')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition whitespace-nowrap ${activeTab === 'summary' ? 'bg-indigo-600 text-white shadow' : 'bg-white text-slate-700 border hover:bg-slate-50'}`}
-          >
-            📋 Weekly & Monthly Summary
-          </button>
-        </div>
+      <div className="flex flex-1">
+        <Sidebar activePage={activePage} setActivePage={setActivePage} />
 
-        {/* Render Konten Berdasarkan Tab yang Aktif */}
-        {activeTab === 'dashboard' ? (
-          <>
-            <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3">
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                <span className="text-xs font-bold text-slate-600">SALES OFFICE:</span>
-                <select 
-                  value={selectedOffice} 
-                  onChange={(e) => setSelectedOffice(e.target.value)}
-                  className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
-                >
-                  {salesOfficeList.map((office, idx) => (
-                    <option key={idx} value={office}>{office}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                <span className="text-xs font-bold text-slate-600">GRUP PRODUCT:</span>
-                <select 
-                  value={selectedGroup} 
-                  onChange={(e) => setSelectedGroup(e.target.value)}
-                  className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
-                >
-                  {grupProductList.map((group, idx) => (
-                    <option key={idx} value={group}>{group}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                <span className="text-xs font-bold text-slate-600">SALESMAN:</span>
-                <select 
-                  value={selectedSalesman} 
-                  onChange={(e) => setSelectedSalesman(e.target.value)}
-                  className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
-                >
-                  {salesmanList.map((sales, idx) => (
-                    <option key={idx} value={sales}>{sales}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <SalesProfileCard data={currentData} />
-            <ScorecardTable scorecards={currentData.scorecard} />
-            <MonthlyTrackRecord records={currentData.trackRecord} />
-            <ActionPlanSection data={currentData} />
-          </>
-        ) : activeTab === 'toolkit' ? (
-          <SellingToolkit />
-        ) : activeTab === 'monitoring' ? (
-          <DailyMonitoring />
-        ) : (
-          <WeeklyMonthlySummary />
-        )}
-      </main>
+        <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   );
 }
