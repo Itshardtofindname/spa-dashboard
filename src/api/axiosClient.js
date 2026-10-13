@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export async function fetcher(endpoint, options = {}) {
   const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -11,7 +11,7 @@ export async function fetcher(endpoint, options = {}) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || "Terjadi kesalahan pada server");
+    throw new Error(errorData.detail || "Terjadi kesalahan pada koneksi server");
   }
 
   return response.json();

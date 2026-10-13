@@ -2,10 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { salesApi } from "../api/salesApi";
 
 export function useSalesPerformance() {
-  // State Opsi Filter (Dinamis dari Database)
   const [options, setOptions] = useState({ offices: [], groups: [], salesmen: [] });
   
-  // State Filter Terpilih
   const [selectedOffice, setSelectedOffice] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedSalesman, setSelectedSalesman] = useState("");
@@ -14,7 +12,7 @@ export function useSalesPerformance() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 1. Ambil Opsi Filter Saat Komponen Pertama Kali Di-mount
+  // 1. Load Opsi Filter Pertama Kali
   useEffect(() => {
     let isCancelled = false;
 
@@ -28,20 +26,15 @@ export function useSalesPerformance() {
           if (res.salesmen?.length) setSelectedSalesman(res.salesmen[0]);
         }
       } catch (err) {
-        if (!isCancelled) {
-          setError("Gagal memuat opsi filter dari server: " + err.message);
-        }
+        if (!isCancelled) setError(err.message);
       }
     }
 
     loadOptions();
-
-    return () => {
-      isCancelled = true;
-    };
+    return () => { isCancelled = true; };
   }, []);
 
-  // 2. Ambil Performa Salesman Berdasarkan Filter Terpilih
+  // 2. Fetch Data Performa
   const fetchPerformance = useCallback(async () => {
     if (!selectedOffice && !selectedGroup && !selectedSalesman) return;
 
@@ -56,19 +49,24 @@ export function useSalesPerformance() {
       );
 
       setCurrentData(result);
+
+      // Sinkronkan dropdown Office & Group jika berbeda dengan data asli Salesman
+      if (result.salesOffice) setSelectedOffice(result.salesOffice);
+      if (result.grupProduct) setSelectedGroup(result.grupProduct);
     } catch (err) {
       setError(err.message);
-      setCurrentData(null); // Kosongkan data jika tidak ditemukan/error
+      setCurrentData(null);
     } finally {
       setLoading(false);
     }
   }, [selectedOffice, selectedGroup, selectedSalesman]);
 
+  // 3. Trigger Fetch saat Filter Berubah
   useEffect(() => {
     let isCancelled = false;
 
     async function loadData() {
-      if (!selectedOffice && !selectedGroup && !selectedSalesman) return;
+      if (!selectedSalesman && !selectedOffice && !selectedGroup) return;
 
       try {
         setLoading(true);
@@ -81,6 +79,9 @@ export function useSalesPerformance() {
         if (!isCancelled) {
           setCurrentData(result);
           setError(null);
+          // Auto-sync filter UI
+          if (result?.salesOffice) setSelectedOffice(result.salesOffice);
+          if (result?.grupProduct) setSelectedGroup(result.grupProduct);
         }
       } catch (err) {
         if (!isCancelled) {
@@ -96,10 +97,8 @@ export function useSalesPerformance() {
 
     loadData();
 
-    return () => {
-      isCancelled = true;
-    };
-  }, [selectedOffice, selectedGroup, selectedSalesman]);
+    return () => { isCancelled = true; };
+  }, [selectedSalesman]);
 
   return {
     options,
