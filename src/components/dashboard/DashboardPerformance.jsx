@@ -2,13 +2,13 @@ import SalesProfileCard from './SalesProfileCard';
 import ScorecardTable from './ScorecardTable';
 import MonthlyTrackRecord from './MonthlyTrackRecord';
 import ActionPlanSection from './ActionPlanSection';
-
-// 2. Composable Hook (Naik 2 tingkat folder dari src/components/dashboard/ ke src/composables/)
 import { useSalesPerformance } from '../../composables/useSalesPerformance';
 
 export default function DashboardPerformance() {
   const {
-    options,
+    availableOffices,
+    availableGroups,
+    availableSalesmen,
     selectedOffice,
     setSelectedOffice,
     selectedGroup,
@@ -23,10 +23,10 @@ export default function DashboardPerformance() {
 
   return (
     <div className="space-y-4">
-      {/* Dynamic Filter Selection Bar */}
+      {/* Dynamic Cascading Filter Selection Bar */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3">
         
-        {/* Filter Sales Office */}
+        {/* 1. Filter Sales Office */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="text-xs font-bold text-slate-600">SALES OFFICE:</span>
           <select
@@ -34,7 +34,7 @@ export default function DashboardPerformance() {
             onChange={(e) => setSelectedOffice(e.target.value)}
             className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800"
           >
-            {(options?.offices || []).map((office, idx) => (
+            {availableOffices.map((office, idx) => (
               <option key={idx} value={office}>
                 {office}
               </option>
@@ -42,15 +42,16 @@ export default function DashboardPerformance() {
           </select>
         </div>
 
-        {/* Filter Grup Product */}
+        {/* 2. Filter Grup Product (Filter Bertingkat) */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="text-xs font-bold text-slate-600">GRUP PRODUCT:</span>
           <select
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
-            className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800"
+            disabled={!availableGroups.length}
+            className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800 disabled:opacity-50"
           >
-            {(options?.groups || []).map((group, idx) => (
+            {availableGroups.map((group, idx) => (
               <option key={idx} value={group}>
                 {group}
               </option>
@@ -58,15 +59,16 @@ export default function DashboardPerformance() {
           </select>
         </div>
 
-        {/* Filter Salesman */}
+        {/* 3. Filter Salesman (Filter Bertingkat) */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="text-xs font-bold text-slate-600">SALESMAN:</span>
           <select
             value={selectedSalesman}
             onChange={(e) => setSelectedSalesman(e.target.value)}
-            className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800"
+            disabled={!availableSalesmen.length}
+            className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800 disabled:opacity-50"
           >
-            {(options?.salesmen || []).map((sales, idx) => (
+            {availableSalesmen.map((sales, idx) => (
               <option key={idx} value={sales}>
                 {sales}
               </option>
@@ -75,10 +77,10 @@ export default function DashboardPerformance() {
         </div>
       </div>
 
-      {/* State Indicators */}
+      {/* Indicator Status */}
       {loading && (
         <div className="bg-white p-6 rounded-lg border border-slate-200 text-center text-xs text-slate-500 shadow-sm">
-          ⚡ Memuat data performa salesman dari database Supabase...
+          ⚡ Memuat data performa salesman dari Supabase...
         </div>
       )}
 
@@ -91,7 +93,7 @@ export default function DashboardPerformance() {
         </div>
       )}
 
-      {/* Render Data Performa dari Supabase */}
+      {/* Render Widget Dashboard */}
       {!loading && !error && currentData && (
         <>
           <SalesProfileCard data={currentData} />
@@ -103,7 +105,7 @@ export default function DashboardPerformance() {
 
       {!loading && !error && !currentData && (
         <div className="bg-white p-8 rounded-lg border border-slate-200 text-center text-xs text-slate-400 shadow-sm">
-          Belum ada data performa salesman untuk kombinasi filter ini. Silakan pilih salesman lain atau sync data via Excel.
+          Belum ada data performa salesman untuk kombinasi filter ini.
         </div>
       )}
     </div>

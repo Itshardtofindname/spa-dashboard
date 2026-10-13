@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { salesApi } from "../api/salesApi";
 
+function sortedUnique(arr) {
+  return Array.from(new Set(arr.filter(Boolean))).sort();
+}
+
 export function useSalesPerformance() {
-  const [options, setOptions] = useState({ offices: [], groups: [], salesmen: [] });
-  
+  const [rawData, setRawData] = useState([]);
   const [selectedOffice, setSelectedOffice] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedSalesman, setSelectedSalesman] = useState("");
@@ -12,47 +15,117 @@ export function useSalesPerformance() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 1. Load Opsi Filter Pertama Kali
+  // 1. Fetch Opsi Master Pertama Kali & Inisialisasi Filter Awal
   useEffect(() => {
-    let isCancelled = false;
+    let ignore = false;
 
     async function loadOptions() {
       try {
         const res = await salesApi.getFilterOptions();
-        if (!isCancelled && res) {
-          setOptions(res);
-          if (res.offices?.length) setSelectedOffice(res.offices[0]);
-          if (res.groups?.length) setSelectedGroup(res.groups[0]);
-          if (res.salesmen?.length) setSelectedSalesman(res.salesmen[0]);
+        if (!ignore && res) {
+          const list = res.raw || [];
+          setRawData(list);
+
+          if (list.length > 0) {
+            const initialOffice = list[0].sales_office || "";
+            
+            // Hitung grup produk awal untuk office terpilih
+            const groups = sortedUnique(
+              list.filter((i) => i.sales_office === initialOffice).map((i) => i.grup_product)
+            );
+            const initialGroup = groups[0] || "";
+
+            // Hitung salesman awal untuk office & group terpilih
+            const salesmen = sortedUnique(
+              list
+                .filter((i) => i.sales_office === initialOffice && i.grup_product === initialGroup)
+                .map((i) => i.nama)
+            );
+            const initialSalesman = salesmen[0] || "";
+
+            // Set state awal secara bersamaan
+            setSelectedOffice(initialOffice);
+            setSelectedGroup(initialGroup);
+            setSelectedSalesman(initialSalesman);
+          }
         }
       } catch (err) {
-        if (!isCancelled) setError(err.message);
+        if (!ignore) setError(err.message);
       }
     }
 
     loadOptions();
-    return () => { isCancelled = true; };
+    return () => { ignore = true; };
   }, []);
 
-  // 2. Fetch Data Performa
+  // 2. Daftar Opsi Sales Office (Dihitung langsung)
+  const availableOffices = useMemo(() => {
+    return sortedUnique(rawData.map((i) => i.sales_office));
+  }, [rawData]);
+
+  // 3. Daftar Opsi Grup Product berdasarkan Sales Office terpilih
+  const availableGroups = useMemo(() => {
+    if (!selectedOffice) return [];
+    const filtered = rawData.filter((i) => i.sales_office === selectedOffice);
+    return sortedUnique(filtered.map((i) => i.grup_product));
+  }, [rawData, selectedOffice]);
+
+  // 4. Daftar Opsi Salesman berdasarkan Office & Group terpilih
+  const availableSalesmen = useMemo(() => {
+    if (!selectedOffice || !selectedGroup) return [];
+    const filtered = rawData.filter(
+      (i) => i.sales_office === selectedOffice && i.grup_product === selectedGroup
+    );
+    return sortedUnique(filtered.map((i) => i.nama));
+  }, [rawData, selectedOffice, selectedGroup]);
+
+  // 5. Handler Perubahan Filter (Mencegah setState di useEffect)
+  const handleOfficeChange = (newOffice) => {
+    setSelectedOffice(newOffice);
+
+    const groups = sortedUnique(
+      rawData.filter((i) => i.sales_office === newOffice).map((i) => i.grup_product)
+    );
+    const newGroup = groups[0] || "";
+    setSelectedGroup(newGroup);
+
+    const salesmen = sortedUnique(
+      rawData
+        .filter((i) => i.sales_office === newOffice && i.grup_product === newGroup)
+        .map((i) => i.nama)
+    );
+    setSelectedSalesman(salesmen[0] || "");
+  };
+
+  const handleGroupChange = (newGroup) => {
+    setSelectedGroup(newGroup);
+
+    const salesmen = sortedUnique(
+      rawData
+        .filter((i) => i.sales_office === selectedOffice && i.grup_product === newGroup)
+        .map((i) => i.nama)
+    );
+    setSelectedSalesman(salesmen[0] || "");
+  };
+
+  const handleSalesmanChange = (newSalesman) => {
+    setSelectedSalesman(newSalesman);
+  };
+
+  // 6. Fetch Data Performa dari API ketika Filter Berubah
   const fetchPerformance = useCallback(async () => {
-    if (!selectedOffice && !selectedGroup && !selectedSalesman) return;
+    if (!selectedSalesman) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
-
       const result = await salesApi.getPerformance(
         selectedOffice,
         selectedGroup,
         selectedSalesman
       );
-
       setCurrentData(result);
-
-      // Sinkronkan dropdown Office & Group jika berbeda dengan data asli Salesman
-      if (result.salesOffice) setSelectedOffice(result.salesOffice);
-      if (result.grupProduct) setSelectedGroup(result.grupProduct);
     } catch (err) {
       setError(err.message);
       setCurrentData(null);
@@ -61,53 +134,46 @@ export function useSalesPerformance() {
     }
   }, [selectedOffice, selectedGroup, selectedSalesman]);
 
-  // 3. Trigger Fetch saat Filter Berubah
   useEffect(() => {
-    let isCancelled = false;
+    let ignore = false;
+    if (!selectedSalesman) return;
 
     async function loadData() {
-      if (!selectedSalesman && !selectedOffice && !selectedGroup) return;
-
+      setLoading(true);
       try {
-        setLoading(true);
         const result = await salesApi.getPerformance(
           selectedOffice,
           selectedGroup,
           selectedSalesman
         );
-
-        if (!isCancelled) {
+        if (!ignore) {
           setCurrentData(result);
           setError(null);
-          // Auto-sync filter UI
-          if (result?.salesOffice) setSelectedOffice(result.salesOffice);
-          if (result?.grupProduct) setSelectedGroup(result.grupProduct);
         }
       } catch (err) {
-        if (!isCancelled) {
+        if (!ignore) {
           setError(err.message);
           setCurrentData(null);
         }
       } finally {
-        if (!isCancelled) {
-          setLoading(false);
-        }
+        if (!ignore) setLoading(false);
       }
     }
 
     loadData();
-
-    return () => { isCancelled = true; };
-  }, [selectedSalesman]);
+    return () => { ignore = true; };
+  }, [selectedOffice, selectedGroup, selectedSalesman]);
 
   return {
-    options,
+    availableOffices,
+    availableGroups,
+    availableSalesmen,
     selectedOffice,
-    setSelectedOffice,
+    setSelectedOffice: handleOfficeChange,
     selectedGroup,
-    setSelectedGroup,
+    setSelectedGroup: handleGroupChange,
     selectedSalesman,
-    setSelectedSalesman,
+    setSelectedSalesman: handleSalesmanChange,
     currentData,
     loading,
     error,
