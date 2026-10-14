@@ -1,7 +1,10 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function fetcher(endpoint, options = {}) {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const baseUrl = BASE_URL.replace(/\/+$/, "");
+  const path = `/${endpoint.replace(/^\/+/, "")}`;
+
+  const response = await fetch(`${baseUrl}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
