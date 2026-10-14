@@ -1,7 +1,6 @@
 import { fetcher } from "./axiosClient";
 
 export const salesApi = {
-  // Opsi dropdown filter dinamis dari Supabase
   getFilterOptions: () => fetcher("/api/salesmen/options"),
 
   // Data performa salesman berdasarkan filter
@@ -11,6 +10,6 @@ export const salesApi = {
     if (group) params.append("group", group);
     if (salesman) params.append("salesman", salesman);
 
-    return fetcher(`/salesmen/performance?${params.toString()}`);
+    return fetcher(`/api/salesmen/performance?${params.toString()}`);
   },
 };
