@@ -14,7 +14,7 @@ const l4Data = [
 export default function TargetL4Table() {
   return (
     <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden text-xs">
-      <div className="bg-slate-700 text-white p-3 flex justify-between items-center">
+      <div className="bg-slate-700 text-white p-3 flex flex-wrap justify-between items-center gap-2">
         <span className="font-bold uppercase tracking-wider text-xs">
           TARGET L4 — DETAIL PART NUMBER & METODE FRONT-LINE
         </span>
@@ -23,8 +23,14 @@ export default function TargetL4Table() {
         </span>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <p className="px-3 pt-2 text-[10px] text-slate-500 sm:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+      <div className="target-l4-scroll max-w-full overflow-x-auto" role="region" aria-label="Tabel target L4 detail part number" tabIndex="0">
+        <table className="target-l4-table w-full text-left border-collapse">
+          <colgroup>
+            {[230, 75, 75, 65, 90, 65, 65, 75, 180].map((width, index) => (
+              <col key={index} style={{ width }} />
+            ))}
+          </colgroup>
           <thead>
             <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 uppercase text-[10px]">
               <th className="p-2">ITEM SKU (PART NAME)</th>

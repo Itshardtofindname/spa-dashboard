@@ -13,8 +13,14 @@ export default function RegionalTargetTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <p className="px-3 pt-2 text-[10px] text-slate-500 sm:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+      <div className="regional-target-scroll max-w-full overflow-x-auto" role="region" aria-label="Tabel monitoring target regional" tabIndex="0">
+        <table className="regional-target-table w-full text-left border-collapse">
+          <colgroup>
+            {[210, 130, 130, 110, 130, 130, 110, 110].map((width, index) => (
+              <col key={index} style={{ width }} />
+            ))}
+          </colgroup>
           <thead>
             <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-[10px]">
               <th className="p-2.5">KATEGORI MONITORING</th>
@@ -29,9 +35,10 @@ export default function RegionalTargetTable() {
           </thead>
           <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
             <tr>
-              <td className="p-2.5 font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-rose-800 rounded-sm"></span>
+              <td className="p-2.5 font-bold">
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 shrink-0 bg-rose-800 rounded-sm"></span>
                 TGT TOKO [H. HOTIB MOTOR]
+                </span>
               </td>
               <td className="p-2.5 text-right font-bold">Rp 6.805.000</td>
               <td className="p-2.5 text-right text-slate-400">-</td>
@@ -46,9 +53,10 @@ export default function RegionalTargetTable() {
               </td>
             </tr>
             <tr className="bg-slate-50/50">
-              <td className="p-2.5 font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-emerald-600 rounded-sm"></span>
+              <td className="p-2.5 font-bold">
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 shrink-0 bg-emerald-600 rounded-sm"></span>
                 TGT TOTAL REGIONAL 5080
+                </span>
               </td>
               <td className="p-2.5 text-right font-bold">Rp 657.533.050</td>
               <td className="p-2.5 text-right font-bold text-emerald-600">Rp 159.124.235</td>

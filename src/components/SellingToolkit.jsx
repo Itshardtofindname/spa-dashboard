@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ResponsiveSelect from './ResponsiveSelect';
 import { sellingToolkitData } from '../data/sellingToolkitData';
 import { salesmanList, customerList, dayList } from '../data/dataSales';
 
@@ -10,70 +11,48 @@ export default function SellingToolkit() {
 
   return (
     <div className="space-y-4 text-slate-800">
-      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Salesman:</span>
-            <select 
+      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="grid w-full grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2 2xl:grid-cols-3">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-center gap-1.5 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-3">
+            <span className="whitespace-nowrap text-xs font-bold leading-tight text-slate-600">Salesman:</span>
+            <ResponsiveSelect 
               value={selectedSalesman} 
               onChange={(e) => setSelectedSalesman(e.target.value)}
-              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+              className="min-w-0 w-full h-11 text-sm border border-slate-300 rounded-md px-3 bg-slate-50 font-medium"
             >
               {salesmanList.map((salesman, idx) => (
                 <option key={idx} value={salesman}>{salesman}</option>
               ))}
-            </select>
+            </ResponsiveSelect>
           </div>
 
-          <div>
-            <span className="text-slate-500 font-semibold">Jadwal Visit:</span>
-            <select 
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-center gap-1.5 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-3">
+            <span className="whitespace-nowrap text-xs font-bold leading-tight text-slate-600">Jadwal Visit:</span>
+            <ResponsiveSelect 
               value={selectedDay} 
               onChange={(e) => setSelectedDay(e.target.value)}
-              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+              className="min-w-0 w-full h-11 text-sm border border-slate-300 rounded-md px-3 bg-slate-50 font-medium"
             >
               {dayList.map((day, idx) => (
                 <option key={idx} value={day}>{day}</option>
               ))}
-            </select>
+            </ResponsiveSelect>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs  text-slate-500 whitespace-nowrap">Active Customer ID:</span>
-            <select 
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-center gap-1.5 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-3">
+            <span className="whitespace-nowrap text-xs font-bold leading-tight text-slate-600">Active Customer ID:</span>
+            <ResponsiveSelect 
               value={selectedCustomer} 
               onChange={(e) => setSelectedCustomer(e.target.value)}
-              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
+              className="min-w-0 w-full h-11 text-sm border border-slate-300 rounded-md px-3 bg-slate-50 font-medium"
             >
               {customerList.map((customer, idx) => (
                 <option key={idx} value={customer}>{customer}</option>
               ))}
-            </select>
+            </ResponsiveSelect>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-xs">
-          {/* <div>
-            <span className="text-slate-500 font-semibold">Jadwal Visit:</span>
-            <select 
-              value={selectedDay} 
-              onChange={(e) => setSelectedDay(e.target.value)}
-              className="text-xs border border-slate-300 rounded px-2 py-1.5 bg-slate-50 font-medium w-full md:w-64"
-            >
-              {dayList.map((day, idx) => (
-                <option key={idx} value={day}>{day}</option>
-              ))}
-            </select>
-          </div> */}
-          {/* <div className="flex gap-2">
-            <button className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1">
-              📥 Unduh Rekap Visit
-            </button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1">
-              📤 Kirim PO ke Toko
-            </button>
-          </div> */}
-        </div>
       </div>
 
       {/* Status Visit Alert */}
@@ -176,20 +155,26 @@ export default function SellingToolkit() {
 
       {/* SECTION 03: REKOMENDASI CROSS-SELL & UP-SELL ENGINE */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
-        <div className="flex justify-between items-center border-b pb-2">
+        <div className="flex flex-col gap-2 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-2">
             💡 SECTION 03: REKOMENDASI CROSS-SELL & UP-SELL ENGINE
           </h3>
-          <div className="flex gap-1 text-xs">
-            <button className="px-2 py-1 bg-slate-900 text-white rounded">Semua Part (11)</button>
-            <button className="px-2 py-1 bg-gray-100 text-slate-700 rounded">Up-Sell (7)</button>
-            <button className="px-2 py-1 bg-gray-100 text-slate-700 rounded">Cross-Sell (4)</button>
+          <div className="grid w-full grid-cols-3 gap-1 text-[10px] sm:w-auto sm:text-xs">
+            <button className="min-w-0 rounded bg-slate-900 px-1.5 py-1.5 leading-tight text-white sm:px-2">Semua Part (11)</button>
+            <button className="min-w-0 rounded bg-gray-100 px-1.5 py-1.5 leading-tight text-slate-700 sm:px-2">Up-Sell (7)</button>
+            <button className="min-w-0 rounded bg-gray-100 px-1.5 py-1.5 leading-tight text-slate-700 sm:px-2">Cross-Sell (4)</button>
           </div>
         </div>
 
         {/* Tabel Cross Sell */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        <p className="mb-2 text-[10px] text-slate-500 sm:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+        <div className="cross-sell-scroll max-w-full overflow-x-auto rounded border border-slate-200" role="region" aria-label="Tabel rekomendasi cross-sell dan up-sell" tabIndex="0">
+          <table className="cross-sell-table w-full text-left border-collapse text-xs">
+            <colgroup>
+              {[145, 105, 70, 70, 70, 75, 70, 115, 120].map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
             <thead>
               <tr className="bg-slate-900 text-white text-[11px]">
                 <th className="p-2 border">KATEGORI PART</th>
@@ -214,7 +199,7 @@ export default function SellingToolkit() {
                   <td className="p-2 text-center border text-red-600 font-semibold">{item.selisih}</td>
                   <td className="p-2 text-center border font-semibold">{item.growth}</td>
                   <td className="p-2 text-center border">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.type === 'UP-SELL' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      <span className={`inline-block whitespace-nowrap px-2 py-0.5 rounded text-[10px] font-bold ${item.type === 'UP-SELL' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>
                       {item.type}
                     </span>
                   </td>
@@ -244,14 +229,14 @@ export default function SellingToolkit() {
           <span className="text-[10px] text-gray-500 block">Simulasi Sisa Plafon Setelah PO:</span>
           <span className="text-lg font-extrabold text-emerald-600">Rp 23.970.801</span>
         </div>
-        <div className="flex gap-2">
-          <button className="border border-slate-300 text-slate-700 px-3 py-2 rounded text-xs font-bold hover:bg-slate-50">
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-3">
+          <button className="min-h-11 flex items-center justify-center border border-slate-300 text-slate-700 px-3 py-2 rounded text-xs font-bold leading-tight hover:bg-slate-50">
             🖨️ Cetak PO
           </button>
-          <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-xs font-bold">
+          <button className="min-h-11 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-xs font-bold leading-tight">
             💬 Kirim WA ke Toko
           </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-extrabold shadow">
+          <button className="min-h-11 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-extrabold leading-tight shadow">
             📤 Submit Order ke BOSNET & SAP
           </button>
         </div>

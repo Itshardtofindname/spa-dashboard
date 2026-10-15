@@ -18,7 +18,7 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-8 space-y-6">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden p-6 sm:p-8 space-y-6">
         
         {/* Logo & Header */}
         <div className="text-center space-y-2">

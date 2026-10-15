@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ResponsiveSelect from './ResponsiveSelect';
 import logoImg from '../assets/logo.png';
 import { monthList, yearList } from '../data/dataSales';
 
@@ -31,7 +32,7 @@ export default function Navbar({ salesmanData, onLogout }) {
           {/* Period Dropdowns */}
           <div className="hidden items-center gap-1.5 rounded-lg border border-slate-400 bg-white/50 px-2.5 py-1.5 text-xs text-black md:flex">
             <span className="font-bold mr-1">Periode:</span>
-            <select 
+            <ResponsiveSelect 
               value={selectedMonth} 
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="bg-transparent font-semibold text-black focus:outline-none cursor-pointer"
@@ -39,8 +40,8 @@ export default function Navbar({ salesmanData, onLogout }) {
               {monthList.map((m, idx) => (
                 <option key={idx} value={m}>{m}</option>
               ))}
-            </select>
-            <select 
+            </ResponsiveSelect>
+            <ResponsiveSelect 
               value={selectedYear} 
               onChange={(e) => setSelectedYear(e.target.value)}
               className="bg-transparent font-semibold text-black focus:outline-none cursor-pointer"
@@ -48,7 +49,7 @@ export default function Navbar({ salesmanData, onLogout }) {
               {yearList.map((y, idx) => (
                 <option key={idx} value={y}>{y}</option>
               ))}
-            </select>
+            </ResponsiveSelect>
           </div>
 
           {/* Export PDF */}

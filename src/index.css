@@ -2,30 +2,188 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.app-content-shell, .app-main {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.app-main table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-main .scorecard-table {
+  display: table;
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+select {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.45rem 2rem 0.45rem 0.75rem;
+  background-color: #fff;
+  color: #1e293b;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+select:focus-visible {
+  outline: 2px solid #be123c;
+  outline-offset: 1px;
+}
+
+select option {
+  max-width: calc(100vw - 2rem);
+  white-space: normal;
+}
+
+.responsive-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: 2.25rem;
+  max-width: 100%;
+  text-align: left;
+  overflow: hidden;
+}
+
+.responsive-select-trigger:disabled { cursor: not-allowed; opacity: 0.55; }
+.responsive-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.responsive-select-chevron { width: 1rem; height: 1rem; flex: 0 0 auto; transition: transform 150ms ease; }
+.responsive-select-menu {
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.25rem;
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.2);
+}
+.responsive-select-option {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border-radius: 0.35rem;
+  padding: 0.55rem 0.65rem;
+  color: #1e293b;
+  text-align: left;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.responsive-select-option:hover, .responsive-select-option:focus-visible,
+.responsive-select-option[aria-selected="true"] { outline: none; background: #eff6ff; color: #1d4ed8; }
+.responsive-select-option:disabled { cursor: not-allowed; opacity: 0.5; }
+
+@media (max-width: 767px) {
+  .app-main .scorecard-table {
+    display: block;
+    width: 680px !important;
+    min-width: 680px !important;
+    table-layout: fixed;
+  }
+  .scorecard-table-scroll { overscroll-behavior-x: contain; }
+}
+
+.app-main .track-record-table {
+  width: 1355px !important;
+  min-width: 1355px !important;
+  table-layout: fixed;
+}
+
+.track-record-scroll { overscroll-behavior-x: contain; }
+
+.track-record-table th, .track-record-table td { overflow-wrap: anywhere; }
+
+.app-main .cross-sell-table {
+  display: table !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+.cross-sell-scroll { overscroll-behavior-x: contain; }
+
+@media (max-width: 1023px) {
+  .app-main .cross-sell-table {
+    display: block !important;
+    width: 840px !important;
+    min-width: 840px !important;
+  }
+}
+
+.app-main .strategic-sku-table {
+  display: table !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+.strategic-sku-scroll { overscroll-behavior-x: contain; }
+
+.app-main .regional-target-table { width: 1060px !important; min-width: 1060px !important; table-layout: fixed; }
+.app-main .target-l4-table { width: 920px !important; min-width: 920px !important; table-layout: fixed; }
+.app-main .target-l2-table { width: 875px !important; min-width: 875px !important; table-layout: fixed; }
+.regional-target-scroll, .target-l4-scroll, .target-l2-scroll { overscroll-behavior-x: contain; }
+.regional-target-table th, .regional-target-table td,
+.target-l4-table th, .target-l4-table td,
+.target-l2-table th, .target-l2-table td { overflow-wrap: anywhere; }
+
+@media (max-width: 1023px) {
+  .app-main .strategic-sku-table {
+    display: block !important;
+    width: 760px !important;
+    min-width: 760px !important;
+  }
+}
+
 .app-sidebar {
   position: fixed !important;
-  z-index: 2147483647 !important;
+  z-index: 40 !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .app-sidebar {
     display: flex !important;
-    left: 0;
-    top: 64px;
+    z-index: 40 !important;
+    inset: 64px auto 0 0 !important;
     width: 16rem;
-    height: calc(100vh - 64px);
-    min-height: calc(100vh - 64px);
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100vh - 64px);
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .app-content-shell { padding-left: 16rem; }
   .app-main { width: auto; }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   html, body, #root { min-height: 100%; }
-  body { overflow-x: hidden; }
+  body { overflow-x: clip; }
   .app-main { padding: 1rem 0.875rem 6rem; }
   .app-sidebar {
     display: flex !important;
@@ -50,6 +208,39 @@
   .sidebar-link { width: 100%; min-width: 0; flex-direction: column; justify-content: center; gap: 0.25rem; padding: 0.5rem 0.1rem; text-align: center; font-size: 0.625rem; }
   .sidebar-link svg { width: 1.15rem; height: 1.15rem; }
   .sidebar-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  main, main > * { min-width: 0; }
-  table { min-width: 36rem; }
+  .app-content-shell, .app-main, .app-main > *, .app-main section, .app-main article,
+  .app-main .grid > *, .app-main .flex > * { min-width: 0; }
+  .app-main img, .app-main video, .app-main canvas { max-width: 100%; height: auto; }
+  .app-main input, .app-main select, .app-main textarea { max-width: 100%; }
+  .app-main select { min-height: 2.5rem; }
+  .app-main table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-main th, .app-main td { overflow-wrap: anywhere; }
+  .app-main h1, .app-main h2, .app-main h3, .app-main h4 { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 479px) {
+  .app-main { padding-right: 0.75rem; padding-left: 0.75rem; }
+  .app-main .p-4 { padding: 0.875rem; }
+}
+
+@media (max-width: 639px) {
+  .calendar-popover {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+    top: 50% !important;
+    right: auto !important;
+    left: 50% !important;
+    width: min(18rem, calc(100vw - 1rem)) !important;
+    max-height: calc(100dvh - 1rem);
+    margin-top: 0 !important;
+    overflow-y: auto;
+    transform: translate(-50%, -50%);
+  }
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ResponsiveSelect from './ResponsiveSelect';
 import { getDailyMonitoringData } from '../data/dailyMonitoringData';
 import { customerList, salesmanList } from '../data/dataSales';
 // import CalendarPicker from './CalendarPicker';
@@ -24,88 +25,54 @@ export default function DailyMonitoring() {
   return (
     <div className="space-y-4 text-slate-800">
       
-      {/* Top Header & Integrated Controls */}
-      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 w-full">
-          
-          {/* Sisi Kiri: Judul & Informasi Dropdown */}
-          <div className="space-y-1.5">
-            <div className="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded inline-block font-bold">DKS MONITORING</div>
-            <h2 className="text-sm font-extrabold text-slate-900">Sales Daily Monitoring & Kunjungan Rute DKS</h2>
-            
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-              <span className="flex items-center gap-1 font-semibold">
-                👤 
-                <select 
-                  value={selectedSalesman} 
-                  onChange={(e) => setSelectedSalesman(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[180px] truncate"
-                >
-                  {salesmanList.map((sales, idx) => (
-                    <option key={idx} value={sales}>{sales}</option>
-                  ))}
-                </select>
-              </span>
+      {/* Header and dashboard filters */}
+      <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-slate-100 pb-3">
+          <span className="rounded bg-slate-900 px-2 py-1 text-[10px] font-bold text-white">DKS MONITORING</span>
+          <h2 className="text-sm font-extrabold leading-snug text-slate-900">Sales Daily Monitoring &amp; Kunjungan Rute DKS</h2>
+        </header>
 
-              <span className="text-slate-300">|</span>
+        <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 2xl:grid-cols-[minmax(10rem,0.85fr)_minmax(12rem,1fr)_minmax(30rem,2.2fr)_auto]">
+          <label className="grid min-w-0 gap-1.5 text-[11px] font-semibold text-slate-600">
+            Salesman
+            <ResponsiveSelect
+              value={selectedSalesman}
+              onChange={(e) => setSelectedSalesman(e.target.value)}
+              className="h-11 min-w-0 w-full rounded-md border border-slate-300 bg-slate-50 px-3 text-sm font-bold text-slate-900"
+            >
+              {salesmanList.map((sales, idx) => <option key={idx} value={sales}>{sales}</option>)}
+            </ResponsiveSelect>
+          </label>
 
-              <span className="flex items-center gap-1 font-semibold">
-                🏢 
-                <select 
-                  value={selectedCustomer} 
-                  onChange={(e) => setSelectedCustomer(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-900 focus:outline-none cursor-pointer max-w-[180px] truncate"
-                >
-                  {customerList.map((customer, idx) => (
-                    <option key={idx} value={customer}>{customer}</option>
-                  ))}
-                </select>
-              </span>
+          <label className="grid min-w-0 gap-1.5 text-[11px] font-semibold text-slate-600">
+            Active Customer
+            <ResponsiveSelect
+              value={selectedCustomer}
+              onChange={(e) => setSelectedCustomer(e.target.value)}
+              className="h-11 min-w-0 w-full rounded-md border border-slate-300 bg-slate-50 px-3 text-sm font-bold text-slate-900"
+            >
+              {customerList.map((customer, idx) => <option key={idx} value={customer}>{customer}</option>)}
+            </ResponsiveSelect>
+          </label>
+
+          <div className="grid min-w-0 gap-1.5 text-[11px] font-semibold text-slate-600">
+            <span>Periode</span>
+            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <input aria-label="Tanggal dari" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-11 w-full min-w-0 rounded-md border border-slate-300 bg-slate-50 px-2 text-xs font-bold text-slate-800" />
+              <input aria-label="Tanggal sampai" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-11 w-full min-w-0 rounded-md border border-slate-300 bg-slate-50 px-2 text-xs font-bold text-slate-800" />
+              <button className="min-h-11 rounded-md bg-blue-600 px-5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700">Cari</button>
             </div>
           </div>
 
-          {/* Sisi Kanan: Date-to-Date Ringkas & Tombol Live Tracking Sejajar */}
-          <div className="flex items-center gap-2">
-            
-            {/* Input Date-to-Date Tanpa Ikon & Bisa Ditekan di Mana Saja */}
-            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
-              <span className="text-slate-500 font-bold">Periode:</span>
-              
-              {/* Tanggal Awal */}
-              <input 
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer relative"
-              />
-              
-              <span className="text-slate-400 font-medium px-0.5">s/d</span>
-              
-              {/* Tanggal Akhir */}
-              <input 
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer text-xs [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer relative"
-              />
-
-              <button className="bg-blue-600 text-white px-2.5 py-1 rounded font-bold text-[10px] hover:bg-blue-700 transition ml-1">
-                Cari
-              </button>
-            </div>
-
-            <button className="bg-blue-600 text-white text-xs px-3.5 py-2 rounded-lg font-semibold flex items-center gap-1 hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-              🛰️ Live Tracking
-            </button>
-
-          </div>
-
+          <button className="flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 md:col-span-2 2xl:col-span-1">
+            Live Tracking
+          </button>
         </div>
-      </div>
+      </section>
 
       {/* SUMMARY SALESMAN & TARGET PENCAPAIAN */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-lg shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-        <div className="border-r border-slate-700 pr-2">
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-lg shadow-sm grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4 text-xs">
+        <div className="border-b border-slate-700 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3 2xl:border-r">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Progress Kunjungan Toko</span>
           <div className="text-xl font-extrabold text-white mt-1">{data.summaryCards.kunjunganOnTrack.count} <span className="text-xs font-normal text-slate-300">Toko</span></div>
           <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden mt-2">
@@ -114,14 +81,14 @@ export default function DailyMonitoring() {
           <span className="text-[10px] text-blue-300 mt-1 block">70% Selesai (1 Sedang Visit, 2 Menunggu)</span>
         </div>
 
-        <div className="border-r border-slate-700 pr-2">
+        <div className="border-b border-slate-700 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3 2xl:border-r">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Realisasi Omzet Harian</span>
           <div className="text-xl font-extrabold text-emerald-400 mt-1">{data.summaryCards.omzetHarian.value} {data.summaryCards.omzetHarian.unit}</div>
           <p className="text-[11px] text-slate-300 mt-1">Target: Rp 35.000.000 <span className="text-emerald-400 font-bold">({data.summaryCards.omzetHarian.capai})</span></p>
           <span className="text-[10px] text-amber-300 block">{data.summaryCards.omzetHarian.sisa}</span>
         </div>
 
-        <div className="border-r border-slate-700 pr-2">
+        <div className="border-b border-slate-700 pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-3 2xl:border-r">
           <span className="text-slate-400 block text-[10px] uppercase font-bold">Keakuratan & Validasi GPS</span>
           <div className="text-xl font-extrabold text-cyan-400 mt-1">98.5% <span className="text-xs font-normal text-slate-300">Akurasi</span></div>
           <p className="text-[11px] text-slate-300 mt-1">Radius Check-In: <strong>±3 Meter (High)</strong></p>
@@ -137,10 +104,10 @@ export default function DailyMonitoring() {
       </div>
 
       {/* Main Content Grid: Left (Call Plan Timeline) & Right (SKU Fokus & Rewards) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <div className="grid grid-cols-1 gap-4 items-start xl:grid-cols-12">
         
         {/* LEFT: JADWAL & CALL PLAN RUTE DKS (Col 7) */}
-        <div className="lg:col-span-7 bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
+        <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3 xl:col-span-7">
           <div className="flex justify-between items-center border-b pb-2">
             <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-1">
               📅 Jadwal & Call Plan Rute DKS ({formatLocalDate(startDate)} - {formatLocalDate(endDate)})
@@ -194,7 +161,7 @@ export default function DailyMonitoring() {
         </div>
 
         {/* RIGHT: SKU FOKUS HARIAN & REWARD (Col 5) */}
-        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-20">
+        <div className="space-y-4 xl:col-span-5 xl:sticky xl:top-20">
           
           {/* SKU Fokus Harian */}
           <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-3">
