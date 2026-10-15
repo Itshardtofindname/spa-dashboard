@@ -8,11 +8,11 @@ export default function Navbar({ salesmanData, onLogout }) {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#94ABDE] shadow-sm">
-      <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
+      <div className="mx-auto flex min-h-[64px] max-w-7xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-4 sm:px-4 sm:py-3 lg:px-6">
         
         {/* LEFT - Logo & Brand */}
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-36 shrink-0 items-center justify-center overflow-hidden">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex h-9 w-24 shrink-0 items-center justify-center overflow-hidden sm:h-10 sm:w-36">
             <img src={logoImg} alt="SPA Logo" className="h-full w-full object-contain" />
           </div>
           <div className="min-w-0">
@@ -26,7 +26,7 @@ export default function Navbar({ salesmanData, onLogout }) {
         </div>
 
         {/* RIGHT - Controls & Profile */}
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
           {/* Period Dropdowns */}
           <div className="hidden items-center gap-1.5 rounded-lg border border-slate-400 bg-white/50 px-2.5 py-1.5 text-xs text-black md:flex">

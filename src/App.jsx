@@ -9,11 +9,21 @@ import LembarKerjaSalesman from './components/lks/LembarKerjaSalesman';
 import DashboardPerformance from './components/dashboard/DashboardPerformance';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('spa-dashboard-logged-in') === 'true');
   const [activePage, setActivePage] = useState('dashboard');
 
+  const handleLogin = () => {
+    localStorage.setItem('spa-dashboard-logged-in', 'true');
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('spa-dashboard-logged-in');
+    setIsLoggedIn(false);
+  };
+
   if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   const renderContent = () => {
@@ -35,12 +45,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col">
-      <Navbar onLogout={() => setIsLoggedIn(false)} />
+      <Navbar onLogout={handleLogout} />
 
-      <div className="flex flex-1">
+      <div className="app-content-shell flex flex-1 min-w-0">
         <Sidebar activePage={activePage} setActivePage={setActivePage} />
 
-        <main className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
+        <main className="app-main flex-1 min-w-0 p-6 max-w-[1600px] mx-auto w-full">
           {renderContent()}
         </main>
       </div>
