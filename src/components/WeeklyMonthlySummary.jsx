@@ -22,63 +22,62 @@ export default function WeeklyMonthlySummary() {
           <h2 className="text-base font-extrabold text-slate-900">{data.header.title}</h2>
           <p className="text-xs text-slate-500">{data.header.subtitle}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="bg-slate-800 text-white text-xs px-3 py-1.5 rounded font-semibold hover:bg-slate-900 flex items-center gap-1">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
+          <button className="flex min-h-10 items-center justify-center gap-1 rounded bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-900">
             ⚖️ Bandingkan W3
           </button>
-          <button className="bg-emerald-600 text-white text-xs px-3 py-1.5 rounded font-semibold hover:bg-emerald-700 flex items-center gap-1">
+          <button className="flex min-h-10 items-center justify-center gap-1 rounded bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700">
             📥 Export Laporan
           </button>
         </div>
       </div>
 
-      {/* FILTER & DATE-TO-DATE CUSTOM CALENDAR BAR */}
-      <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col xl:flex-row justify-between items-center gap-3 text-xs">
-        
-        {/* Sisi Kiri: Filter Tampilan & Date-to-Date */}
-        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-          <span className="font-bold text-slate-700 whitespace-nowrap">Filter:</span>
-          
-          <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border">
-            <button className="px-2.5 py-1 font-semibold text-slate-700 rounded bg-white shadow-sm">Bulan Ini</button>
-            <button className="px-2.5 py-1 font-semibold text-slate-600 hover:text-slate-900">Bulan Lalu</button>
-            <button className="px-2.5 py-1 font-semibold text-slate-600 hover:text-slate-900">YTD</button>
+      {/* SUMMARY FILTER TOOLBAR */}
+      <section className="grid grid-cols-1 items-stretch gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-xs xl:grid-cols-[minmax(14rem,0.85fr)_minmax(26rem,1.5fr)] 2xl:grid-cols-[minmax(14rem,0.85fr)_minmax(28rem,1.5fr)_minmax(25rem,1.25fr)]">
+        <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+          <div className="mb-2.5">
+            <h3 className="font-bold text-slate-800">Filter periode</h3>
+            <p className="mt-0.5 text-[10px] text-slate-500">Pilih cakupan laporan</p>
           </div>
-          
-          <span className="text-slate-300 hidden sm:inline">|</span>
-
-          {/* Date-to-Date Ringkas */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg p-1">
-            <span className="text-slate-500 font-bold px-1">Dari</span>
-            <CalendarPicker 
-              selectedDate={startDate}
-              onDateChange={(newDate) => setStartDate(newDate)}
-            />
-            
-            <span className="text-slate-500 font-bold px-0.5">s/d</span>
-            
-            <CalendarPicker 
-              selectedDate={endDate}
-              onDateChange={(newDate) => setEndDate(newDate)}
-            />
-
-            <button className="bg-blue-600 text-white px-3 py-1.5 rounded-md font-bold text-xs hover:bg-blue-700 transition shadow-sm ml-1">
-              Terapkan
-            </button>
+          <div className="grid grid-cols-3 gap-1 rounded-lg bg-slate-200/70 p-1">
+            <button className="min-h-10 rounded-md bg-white px-2 font-bold text-slate-800 shadow-sm">Bulan Ini</button>
+            <button className="min-h-10 rounded-md px-2 font-semibold text-slate-600 transition hover:bg-white hover:text-slate-900">Bulan Lalu</button>
+            <button className="min-h-10 rounded-md px-2 font-semibold text-slate-600 transition hover:bg-white hover:text-slate-900">YTD</button>
           </div>
         </div>
 
-        {/* Sisi Kanan: Pilihan Minggu (Semua, W1 - W4) */}
-        <div className="flex items-center gap-1 w-full xl:w-auto justify-end">
-          <span className="text-slate-400 text-[11px] font-medium mr-1 hidden sm:inline">Minggu:</span>
-          <button className="px-2.5 py-1.5 bg-slate-100 font-bold rounded-md hover:bg-slate-200 transition">Semua</button>
-          <button className="px-2.5 py-1.5 bg-slate-100 font-semibold rounded-md hover:bg-slate-200 transition">W1</button>
-          <button className="px-2.5 py-1.5 bg-slate-100 font-semibold rounded-md hover:bg-slate-200 transition">W2</button>
-          <button className="px-2.5 py-1.5 bg-blue-600 text-white font-bold rounded-md shadow transition">W3 (Aktif)</button>
-          <button className="px-2.5 py-1.5 bg-slate-100 font-semibold rounded-md hover:bg-slate-200 transition">W4 (Proyeksi)</button>
+        <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+          <div className="mb-2.5">
+            <h3 className="font-bold text-slate-800">Rentang tanggal</h3>
+            <p className="mt-0.5 text-[10px] text-slate-500">Tentukan awal dan akhir periode</p>
+          </div>
+          <div className="grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+            <div className="grid min-w-0 gap-1 text-[10px] font-semibold text-slate-500">
+              <span>Dari</span>
+              <CalendarPicker selectedDate={startDate} onDateChange={setStartDate} />
+            </div>
+            <div className="grid min-w-0 gap-1 text-[10px] font-semibold text-slate-500">
+              <span>Sampai</span>
+              <CalendarPicker selectedDate={endDate} onDateChange={setEndDate} />
+            </div>
+            <button className="min-h-11 rounded-md bg-blue-600 px-4 py-2 font-bold text-white shadow-sm transition hover:bg-blue-700">Terapkan</button>
+          </div>
         </div>
 
-      </div>
+        <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-3.5 xl:col-span-2 2xl:col-span-1">
+          <div className="mb-2.5">
+            <h3 className="font-bold text-slate-800">Pilih minggu</h3>
+            <p className="mt-0.5 text-[10px] text-slate-500">Lihat performa per minggu</p>
+          </div>
+          <div className="grid grid-cols-5 gap-1.5">
+            <button className="min-h-11 min-w-0 rounded-md border border-slate-200 bg-white px-1 py-2 font-bold text-slate-700 transition hover:bg-slate-100">Semua</button>
+            <button className="min-h-11 min-w-0 rounded-md border border-slate-200 bg-white px-1 py-2 font-semibold text-slate-700 transition hover:bg-slate-100">W1</button>
+            <button className="min-h-11 min-w-0 rounded-md border border-slate-200 bg-white px-1 py-2 font-semibold text-slate-700 transition hover:bg-slate-100">W2</button>
+            <button className="min-h-11 min-w-0 rounded-md bg-blue-600 px-1 py-2 font-bold text-white shadow-sm">W3 (Aktif)</button>
+            <button className="min-h-11 min-w-0 rounded-md border border-slate-200 bg-white px-1 py-2 font-semibold text-slate-700 transition hover:bg-slate-100">W4 (Proyeksi)</button>
+          </div>
+        </div>
+      </section>
 
       {/* SALESMAN INFO CARD */}
       <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -94,7 +93,7 @@ export default function WeeklyMonthlySummary() {
           <p className="text-[11px] text-slate-600">Supervisor: <strong>{data.salesman.supervisor}</strong></p>
         </div>
 
-        <div className="border-x border-slate-200 px-4 space-y-2">
+        <div className="border-y border-slate-200 py-3 space-y-2 md:border-y-0 md:border-x md:px-4 md:py-0">
           <span className="text-[10px] text-slate-400 uppercase font-bold">Target Bulanan (Dec 2025)</span>
           <div className="text-xl font-extrabold text-slate-900">{data.salesman.targetBulanan}</div>
           <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -116,7 +115,7 @@ export default function WeeklyMonthlySummary() {
       </div>
 
       {/* WEEKLY PERFORMANCE CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3">
         {data.weeklyCards.map((card, idx) => (
           <div key={idx} className={`p-3 rounded-lg border text-xs space-y-2 ${card.isCurrent ? 'bg-blue-50/70 border-blue-300 ring-1 ring-blue-400 shadow-sm' : 'bg-white border-slate-200'}`}>
             <div className="flex justify-between items-center">
@@ -201,14 +200,20 @@ export default function WeeklyMonthlySummary() {
             </h3>
             <p className="text-[10px] text-slate-500">Pencapaian volume, omzet, dan evaluasi SKU per MTD Desember 2025</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex w-full flex-wrap gap-2 md:w-auto">
             <button className="px-3 py-1 bg-slate-100 border text-slate-700 rounded text-xs font-semibold">🔍 Filter Kategori</button>
             <button className="px-3 py-1 bg-slate-100 border text-slate-700 rounded text-xs font-semibold">↕️ Sort by Achieved %</button>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        <p className="text-[10px] text-slate-500 sm:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+        <div className="strategic-sku-scroll max-w-full overflow-x-auto rounded border border-slate-200" role="region" aria-label="Tabel rekapitulasi SKU strategis" tabIndex="0">
+          <table className="strategic-sku-table w-full text-left border-collapse text-xs">
+            <colgroup>
+              {[160, 115, 140, 90, 105, 150].map((width, index) => (
+                <col key={index} style={{ width }} />
+              ))}
+            </colgroup>
             <thead>
               <tr className="bg-slate-900 text-white text-[11px]">
                 <th className="p-2 border">SKU / KATEGORI</th>

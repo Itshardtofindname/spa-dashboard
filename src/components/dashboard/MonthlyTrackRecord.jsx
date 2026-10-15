@@ -1,14 +1,21 @@
 export default function MonthlyTrackRecord({ records = [] }) {
+  const columnWidths = [90, 60, 60, 60, 70, 60, 60, 60, 60, 60, 75, 110, 95, 85, 95, 90, 100, 65];
+
   return (
-    <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-4 overflow-x-auto">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-2">
+    <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm mt-4 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-3">
+        <h3 className="text-xs font-bold text-slate-800 uppercase flex items-center gap-2 min-w-0">
           📊 Rekapitulasi Track Record Bulanan & Komponen KPI (Tahun 2026)
         </h3>
-        <span className="text-[11px] bg-slate-800 text-white px-2 py-0.5 rounded">Data Source: SO_Jakarta_TL_Matrix</span>
+        <span className="text-[11px] bg-slate-800 text-white px-2 py-1 rounded max-w-full break-all">Data Source: SO_Jakarta_TL_Matrix</span>
       </div>
 
-      <table className="w-full text-left border-collapse text-[11px]">
+      <p className="mb-2 text-[10px] text-slate-500 sm:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+      <div className="track-record-scroll max-w-full overflow-x-auto rounded border border-slate-200" role="region" aria-label="Tabel rekapitulasi track record bulanan" tabIndex="0">
+      <table className="track-record-table w-full text-left border-collapse text-[11px]">
+        <colgroup>
+          {columnWidths.map((width, index) => <col key={index} style={{ width }} />)}
+        </colgroup>
         <thead>
           <tr className="bg-slate-900 text-white text-center">
             <th className="p-2 border border-slate-700" rowSpan="2">PH</th>
@@ -62,6 +69,7 @@ export default function MonthlyTrackRecord({ records = [] }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

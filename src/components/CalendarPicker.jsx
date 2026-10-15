@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ResponsiveSelect from './ResponsiveSelect';
 import { monthList } from '../data/dataSales';
 
 export default function CalendarPicker({ selectedDate, onDateChange }) {
@@ -37,25 +38,24 @@ export default function CalendarPicker({ selectedDate, onDateChange }) {
   const displayFormattedDate = `${String(currentDate.getDate()).padStart(2, '0')} ${monthList[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
 
   return (
-    <div className="relative">
+    <div className="relative w-full min-w-0">
       {/* Tombol Utama Trigger Kalender */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+        className="flex w-full min-w-0 items-center justify-between gap-1 rounded-lg border border-slate-300 bg-white px-2 py-2 text-[10px] font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-xs"
       >
         <span className="text-base">📅</span>
-        <span>Kalender:</span>
-        <span className="font-extrabold text-blue-600">{displayFormattedDate}</span>
+        <span className="min-w-0 truncate font-extrabold text-blue-600">{displayFormattedDate}</span>
         <span className="text-slate-400 text-[10px]">▼</span>
       </button>
 
       {/* Pop-up Kotak Kalender */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 z-50 w-72 bg-white rounded-xl shadow-xl border border-slate-200 p-4 text-slate-800 animate-in fade-in zoom-in duration-150">
+        <div className="calendar-popover absolute right-0 mt-2 z-50 w-72 bg-white rounded-xl shadow-xl border border-slate-200 p-4 text-slate-800 animate-in fade-in zoom-in duration-150">
           
           {/* Header Navigasi Bulan & Tahun */}
           <div className="flex justify-between items-center mb-3">
-            <select 
+            <ResponsiveSelect 
               value={currentMonth} 
               onChange={(e) => setCurrentMonth(Number(e.target.value))}
               className="text-xs font-bold bg-slate-100 border rounded px-2 py-1 cursor-pointer focus:outline-none"
@@ -63,9 +63,9 @@ export default function CalendarPicker({ selectedDate, onDateChange }) {
               {monthList.map((m, idx) => (
                 <option key={idx} value={idx}>{m}</option>
               ))}
-            </select>
+            </ResponsiveSelect>
 
-            <select 
+            <ResponsiveSelect 
               value={currentYear} 
               onChange={(e) => setCurrentYear(Number(e.target.value))}
               className="text-xs font-bold bg-slate-100 border rounded px-2 py-1 cursor-pointer focus:outline-none"
@@ -73,7 +73,7 @@ export default function CalendarPicker({ selectedDate, onDateChange }) {
               {years.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
-            </select>
+            </ResponsiveSelect>
           </div>
 
           {/* Label Hari (Sen - Min) */}

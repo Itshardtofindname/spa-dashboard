@@ -56,26 +56,26 @@ export default function SalesProfileCard({ data }) {
       </div>
 
       {/* 2. FINAL GRADE */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-col justify-between">
-        <div>
-          <div className="flex justify-between items-center bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold mb-3">
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex h-full flex-col gap-3">
+          <div className="flex justify-between items-center bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold">
             <span>FINAL GRADE</span>
             <span>September 2026</span>
           </div>
 
-          <div className="text-center my-2">
-            <span className="text-3xl font-black text-slate-800">{finalGrade.score}</span>
-            <div className={`inline-block ml-2 px-2.5 py-0.5 text-xs font-bold rounded text-white ${
+          <div className="flex min-h-36 flex-1 flex-col items-center justify-center rounded-lg bg-slate-50 px-3 py-4 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-4xl font-black leading-none tracking-tight text-slate-800">{finalGrade.score}</span>
+              <span className={`inline-flex items-center px-3 py-1 text-xs font-bold rounded text-white ${
               finalGrade.status === 'HIGH' ? 'bg-emerald-600' :
               finalGrade.status === 'MEDIUM' ? 'bg-amber-500' : 'bg-rose-600'
             }`}>
               {finalGrade.status}
+              </span>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Batas Lulus: {finalGrade.batasLulus}</p>
+            <p className="text-[11px] text-slate-500 mt-2">Batas lulus: <strong className="text-slate-700">{finalGrade.batasLulus}</strong></p>
           </div>
-        </div>
 
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-2 rounded text-[11px] leading-tight font-medium">
+        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-[11px] leading-snug font-medium">
           ⚠️ {finalGrade.keterangan}
         </div>
       </div>

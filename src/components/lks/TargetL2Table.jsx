@@ -31,8 +31,14 @@ export default function TargetL2Table({ storeId = "1000015851" }) {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <p className="px-3 pt-2 text-[10px] text-slate-500 sm:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+      <div className="target-l2-scroll max-w-full overflow-x-auto" role="region" aria-label="Tabel target L2 kelompok produk" tabIndex="0">
+        <table className="target-l2-table w-full text-left border-collapse">
+          <colgroup>
+            {[290, 85, 85, 90, 115, 210].map((width, index) => (
+              <col key={index} style={{ width }} />
+            ))}
+          </colgroup>
           <thead>
             <tr className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 uppercase text-[10px]">
               <th className="p-2">L2</th>
