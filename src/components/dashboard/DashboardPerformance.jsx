@@ -98,7 +98,10 @@ export default function DashboardPerformance() {
       {!loading && !error && currentData && (
         <>
           <SalesProfileCard data={currentData} />
-          <ScorecardTable scorecards={currentData.scorecard || []} />
+          <ScorecardTable
+            productivityScorecard={currentData.productivityScorecard}
+            selectedNpk={currentData.identity?.npk}
+          />
           <MonthlyTrackRecord records={currentData.trackRecord || []} />
           <ActionPlanSection data={currentData} />
         </>

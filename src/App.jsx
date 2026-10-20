@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import LoginPage from './components/LoginPage';
-import SellingToolkit from './components/SellingToolkit';
+import SellingToolkit from './components/toolkit/SellingToolkit';
 import DailyMonitoring from './components/DailyMonitoring';
 import WeeklyMonthlySummary from './components/WeeklyMonthlySummary'; // <-- Import ini
 import LembarKerjaSalesman from './components/lks/LembarKerjaSalesman';
