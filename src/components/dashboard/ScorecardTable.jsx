@@ -1,9 +1,5 @@
-
 import { useState, useMemo, useEffect, useCallback } from 'react';
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || ''
-).replace(/\/+$/, '');
+import { API_BASE_URL } from "../../api/axiosClient";
 
 const DEFAULT_OFFICE = 'S003 - SO SERPONG';
 const DEFAULT_PERIOD = '2026-09-01';
@@ -289,16 +285,18 @@ export default function App({
         report_period: reportPeriod,
       });
 
+      
       const response = await fetch(
         `${API_BASE_URL}/api/scorecard/productivity?${query.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            Accept: 'application/json',
+            Accept: "application/json",
           },
           signal,
         }
       );
+
 
       if (!response.ok) {
         const message = await response.text();

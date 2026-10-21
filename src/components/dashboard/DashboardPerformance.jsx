@@ -97,9 +97,10 @@ export default function DashboardPerformance() {
       {/* Render Widget Dashboard */}
       {!loading && !error && currentData && (
         <>
-          <SalesProfileCard data={currentData} />
+          <SalesProfileCard data={currentData} />          
           <ScorecardTable
-            productivityScorecard={currentData.productivityScorecard}
+            salesOffice={selectedOffice}
+            reportPeriod="2026-09-01"
             selectedNpk={currentData.identity?.npk}
           />
           <MonthlyTrackRecord records={currentData.trackRecord || []} />
