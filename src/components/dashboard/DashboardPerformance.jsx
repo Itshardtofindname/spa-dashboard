@@ -4,7 +4,7 @@ import MonthlyTrackRecord from './MonthlyTrackRecord';
 import ActionPlanSection from './ActionPlanSection';
 import { useSalesPerformance } from '../../composables/useSalesPerformance';
 import ResponsiveSelect from '../ResponsiveSelect';
-import GoogleDriveScorecardImport from './GoogleDriveScorecardImport';
+import GoogleDriveScorecardImport from '../GoogleDriveScorecardImport';
 export default function DashboardPerformance() {
   const {
     availableOffices,
@@ -102,7 +102,7 @@ export default function DashboardPerformance() {
           <SalesProfileCard data={currentData} />          
           <ScorecardTable
             salesOffice={selectedOffice}
-            reportPeriod="2026-09-01"
+            reportPeriod="2026-10-01"
             selectedNpk={currentData.identity?.npk}
           />
           <MonthlyTrackRecord records={currentData.trackRecord || []} />

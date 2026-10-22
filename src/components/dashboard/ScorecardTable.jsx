@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from "../../api/axiosClient";
 
 const DEFAULT_OFFICE = 'S003 - SO SERPONG';
-const DEFAULT_PERIOD = '2026-09-01';
+const DEFAULT_PERIOD = '2026-10-01';
 
 const MONTH_ORDER = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun',
