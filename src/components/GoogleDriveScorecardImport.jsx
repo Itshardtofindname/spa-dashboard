@@ -1,37 +1,74 @@
-
 import { useState } from 'react';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const APP_ID = import.meta.env.VITE_GOOGLE_APP_ID;
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+const GOOGLE_API_SCRIPT = 'https://apis.google.com/js/api.js';
+const GOOGLE_IDENTITY_SCRIPT = 'https://accounts.google.com/gsi/client';
+
 const XLSX_MIME =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[src="${src}"]`);
+function loadScript(src, isReady) {
+  if (isReady()) {
+    return Promise.resolve();
+  }
 
-    if (existing?.dataset.loaded === 'true') {
-      resolve();
-      return;
+  return new Promise((resolve, reject) => {
+    let script = document.querySelector(`script[src="${src}"]`);
+
+    if (script?.dataset.loaded === 'true') {
+      if (isReady()) {
+        resolve();
+        return;
+      }
     }
 
-    const script = existing || document.createElement('script');
-
-    script.src = src;
-    script.async = true;
-
-    script.onload = () => {
+    const handleLoad = () => {
       script.dataset.loaded = 'true';
-      resolve();
+      cleanup();
+
+      if (isReady()) {
+        resolve();
+      } else {
+        reject(new Error(`Pustaka Google tidak siap: ${src}`));
+      }
     };
 
-    script.onerror = () => reject(
-      new Error('Gagal memuat pustaka Google.')
-    );
+    const handleError = () => {
+      cleanup();
+      reject(new Error(`Gagal memuat pustaka Google: ${src}`));
+    };
 
-    if (!existing) document.head.appendChild(script);
+    const cleanup = () => {
+      script?.removeEventListener('load', handleLoad);
+      script?.removeEventListener('error', handleError);
+    };
+
+    if (!script) {
+      script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    script.addEventListener('load', handleLoad, { once: true });
+    script.addEventListener('error', handleError, { once: true });
   });
+}
+
+function getApiEndpoint() {
+  const configuredBaseUrl =
+    import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+
+  const baseUrl = configuredBaseUrl.replace(/\/+$/, '');
+
+  if (/\/api$/i.test(baseUrl)) {
+    return `${baseUrl}/scorecard/sync-drive`;
+  }
+
+  return `${baseUrl}/api/scorecard/sync-drive`;
 }
 
 export default function GoogleDriveScorecardImport() {
@@ -39,97 +76,214 @@ export default function GoogleDriveScorecardImport() {
   const [importToken, setImportToken] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [status, setStatus] = useState('Siap memilih file.');
   const [loading, setLoading] = useState(false);
+  const [pickerLoading, setPickerLoading] = useState(false);
+
+  function showError(message) {
+    setError(message);
+    setStatus('Proses gagal.');
+    setPickerLoading(false);
+  }
 
   async function chooseFile() {
     setError('');
     setResult(null);
+    setSelectedFile(null);
+    setPickerLoading(true);
+    setStatus('Memuat pustaka Google...');
 
     try {
       if (!API_KEY || !APP_ID || !CLIENT_ID) {
         throw new Error(
-          'Konfigurasi Google Picker belum lengkap. Periksa .env.'
+          'Konfigurasi Google Picker belum lengkap. Periksa ' +
+            'VITE_GOOGLE_API_KEY, VITE_GOOGLE_APP_ID, dan ' +
+            'VITE_GOOGLE_CLIENT_ID.'
         );
       }
 
       await Promise.all([
-        loadScript('https://apis.google.com/js/api.js'),
-        loadScript('https://accounts.google.com/gsi/client'),
+        loadScript(
+          GOOGLE_API_SCRIPT,
+          () => Boolean(window.gapi)
+        ),
+        loadScript(
+          GOOGLE_IDENTITY_SCRIPT,
+          () => Boolean(window.google?.accounts?.oauth2)
+        ),
       ]);
 
-      const tokenClient = window.google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/drive.readonly',
-        callback: (tokenResponse) => {
-          if (tokenResponse.error) {
-            setError('Izin Google Drive tidak berhasil diberikan.');
-            return;
-          }
+      if (!window.gapi || !window.google?.accounts?.oauth2) {
+        throw new Error('Pustaka autentikasi Google tidak tersedia.');
+      }
 
-          window.gapi.load('picker', {
-            callback: () => {
-              const view = new window.google.picker.DocsView(
-                window.google.picker.ViewId.DOCS
-              )
-                .setMimeTypes(XLSX_MIME)
-                .setIncludeFolders(false);
+      setStatus('Meminta izin akses Google Drive...');
 
-              const picker = new window.google.picker.PickerBuilder()
-                .setAppId(APP_ID)
-                .setDeveloperKey(API_KEY)
-                .setOAuthToken(tokenResponse.access_token)
-                .setOrigin(window.location.origin)
-                .addView(view)
-                .setCallback((data) => {
-                  if (
-                    data.action ===
-                    window.google.picker.Action.PICKED
-                  ) {
-                    const file = data.docs?.[0];
+      const tokenClient =
+        window.google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/drive.file',
 
-                    if (file) {
-                      setSelectedFile({
-                        id: file.id,
-                        name: file.name,
-                      });
-                      setResult(null);
-                    }
+          callback: (tokenResponse) => {
+            if (
+              tokenResponse.error ||
+              !tokenResponse.access_token
+            ) {
+              console.error('Google OAuth gagal:', {
+                error: tokenResponse.error,
+                description: tokenResponse.error_description,
+              });
+
+              showError(
+                'Autentikasi Google gagal: ' +
+                  (tokenResponse.error_description ||
+                    tokenResponse.error ||
+                    'Token akses tidak tersedia.')
+              );
+              return;
+            }
+
+            setStatus('Membuka Google Picker...');
+
+            window.gapi.load('picker', {
+              callback: () => {
+                try {
+                  if (!window.google?.picker) {
+                    throw new Error(
+                      'Pustaka Google Picker tidak tersedia.'
+                    );
                   }
-                })
-                .build();
 
-              picker.setVisible(true);
-            },
-          });
-        },
-      });
+                  const pickerApi = window.google.picker;
+
+                  const view = new pickerApi.DocsView(
+                    pickerApi.ViewId.DOCS
+                  )
+                    .setMimeTypes(XLSX_MIME)
+                    .setIncludeFolders(false);
+
+                  const picker = new pickerApi.PickerBuilder()
+                    .setAppId(APP_ID)
+                    .setDeveloperKey(API_KEY)
+                    .setOAuthToken(tokenResponse.access_token)
+                    .setOrigin(window.location.origin)
+                    .addView(view)
+                    .setCallback((data) => {
+                      const action = data?.action;
+
+                      console.info('Google Picker action:', action);
+
+                      if (action === pickerApi.Action.CANCEL) {
+                        setStatus('Pemilihan file dibatalkan.');
+                        setPickerLoading(false);
+                        return;
+                      }
+
+                      if (action === pickerApi.Action.PICKED) {
+                        const documents =
+                          data[pickerApi.Response.DOCUMENTS] ||
+                          data.docs ||
+                          [];
+
+                        const file = documents[0];
+
+                        if (!file?.id) {
+                          showError(
+                            'Google Picker tidak mengembalikan ID file.'
+                          );
+                          return;
+                        }
+
+                        setSelectedFile({
+                          id: file.id,
+                          name: file.name || 'File Excel',
+                        });
+
+                        setResult(null);
+                        setError('');
+                        setStatus(
+                          'File dipilih. Tekan "Validasi tanpa impor" untuk menguji backend.'
+                        );
+                        setPickerLoading(false);
+
+                        console.info('File berhasil dipilih:', {
+                          name: file.name || 'File Excel',
+                          hasId: Boolean(file.id),
+                        });
+
+                        return;
+                      }
+
+                      if (
+                        action === pickerApi.Action.ERROR ||
+                        action === 'error'
+                      ) {
+                        console.error('Google Picker error:', {
+                          action,
+                          message:
+                            data.errorMessage || data.error || null,
+                        });
+
+                        showError(
+                          'Google Picker gagal memproses permintaan. ' +
+                            'Periksa API key, OAuth, dan Console.'
+                        );
+                      }
+                    })
+                    .build();
+
+                  picker.setVisible(true);
+                  setStatus('Pilih file Excel dari Google Drive.');
+                  setPickerLoading(false);
+                } catch (err) {
+                  console.error('Picker initialization failed:', err);
+                  showError(
+                    err.message || 'Google Picker gagal diinisialisasi.'
+                  );
+                }
+              },
+            });
+          },
+
+          error_callback: (oauthError) => {
+            // Jangan mencatat access token atau data rahasia.
+            console.error('Google OAuth popup gagal:', {
+              type: oauthError?.type,
+              message: oauthError?.message,
+            });
+
+            showError(
+              'Jendela autentikasi Google gagal dibuka. ' +
+                'Periksa popup, OAuth Client ID, dan Console.'
+            );
+          },
+        });
 
       tokenClient.requestAccessToken();
     } catch (err) {
-      setError(err.message || 'Google Picker gagal dibuka.');
+      console.error('Google Picker setup gagal:', err);
+      showError(err.message || 'Google Picker gagal dibuka.');
     }
   }
 
   async function validateFile() {
-    if (!selectedFile) {
-      setError('Pilih file Excel terlebih dahulu.');
+    if (!selectedFile?.id) {
+      showError('Pilih file Excel terlebih dahulu.');
       return;
     }
 
     if (!importToken.trim()) {
-      setError('Masukkan token impor backend.');
+      showError('Masukkan token impor backend.');
       return;
     }
 
     setLoading(true);
     setError('');
     setResult(null);
+    setStatus('Mengirim permintaan validasi ke backend...');
 
     try {
-      const baseUrl = (
-        import.meta.env.VITE_API_BASE_URL ||
-        'http://127.0.0.1:8000/api'
-      ).replace(/\/+$/, '').replace(/\/api$/i, '');
+      const endpoint = getApiEndpoint();
 
       const params = new URLSearchParams({
         sales_office: 'S003 - SO SERPONG',
@@ -138,8 +292,14 @@ export default function GoogleDriveScorecardImport() {
         file_id: selectedFile.id,
       });
 
+      console.info('Mengirim validasi scorecard:', {
+        endpoint,
+        fileName: selectedFile.name,
+        dryRun: true,
+      });
+
       const response = await fetch(
-        `${baseUrl}/api/scorecard/sync-drive?${params}`,
+        `${endpoint}?${params.toString()}`,
         {
           method: 'POST',
           headers: {
@@ -148,17 +308,33 @@ export default function GoogleDriveScorecardImport() {
         }
       );
 
-      const body = await response.json().catch(() => ({}));
+      const responseText = await response.text();
+
+      let body = {};
+
+      try {
+        body = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        body = { detail: responseText };
+      }
 
       if (!response.ok) {
         throw new Error(
-          body.detail || `Validasi gagal (${response.status}).`
+          body.detail ||
+            body.message ||
+            `Validasi gagal dengan HTTP ${response.status}.`
         );
       }
 
       setResult(body);
+      setStatus('Validasi backend selesai.');
     } catch (err) {
-      setError(err.message || 'Validasi file gagal.');
+      console.error('Scorecard validation failed:', err);
+
+      showError(
+        `${err.message || 'Validasi file gagal.'} ` +
+          'Periksa URL backend, token, dan log backend.'
+      );
     } finally {
       setLoading(false);
     }
@@ -170,6 +346,7 @@ export default function GoogleDriveScorecardImport() {
         <h2 className="text-base font-bold text-slate-800">
           Import Scorecard dari Google Drive
         </h2>
+
         <p className="mt-1 text-sm text-slate-500">
           Pilih file Excel periode Oktober 2026 dan validasi
           sebelum melakukan perubahan database.
@@ -179,16 +356,17 @@ export default function GoogleDriveScorecardImport() {
       <button
         type="button"
         onClick={chooseFile}
-        className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white"
+        disabled={pickerLoading}
+        className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Pilih File Excel
+        {pickerLoading ? 'Memproses Google...' : 'Pilih File Excel'}
       </button>
 
       {selectedFile && (
         <div className="rounded-md bg-slate-50 p-3 text-sm">
           <p className="font-semibold">{selectedFile.name}</p>
-          <p className="mt-1 break-all text-slate-500">
-            File ID: {selectedFile.id}
+          <p className="mt-1 text-slate-600">
+            File berhasil dipilih.
           </p>
         </div>
       )}
@@ -200,6 +378,7 @@ export default function GoogleDriveScorecardImport() {
         >
           Token impor backend
         </label>
+
         <input
           id="scorecard-import-token"
           type="password"
@@ -209,22 +388,23 @@ export default function GoogleDriveScorecardImport() {
           placeholder="Masukkan token dari konfigurasi backend"
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
         />
-        <p className="mt-1 text-xs text-slate-500">
-          Tidak disimpan ke localStorage atau file .env frontend.
-        </p>
       </div>
 
       <button
         type="button"
-        disabled={!selectedFile || !importToken || loading}
+        disabled={!selectedFile || !importToken.trim() || loading}
         onClick={validateFile}
         className="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? 'Memvalidasi...' : 'Validasi tanpa impor'}
       </button>
 
+      <p className="text-sm text-slate-600" role="status">
+        Status: {status}
+      </p>
+
       {error && (
-        <p role="alert" className="text-sm text-rose-700">
+        <p role="alert" className="break-words text-sm text-rose-700">
           {error}
         </p>
       )}
