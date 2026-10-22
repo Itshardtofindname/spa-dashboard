@@ -5,7 +5,7 @@ function sortedUnique(arr) {
   return Array.from(new Set(arr.filter(Boolean))).sort();
 }
 
-export function useSalesPerformance() {
+export function useSalesPerformance(reportPeriod = "2026-09-01") {
   const [rawData, setRawData] = useState([]);
   const [selectedOffice, setSelectedOffice] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
@@ -27,7 +27,12 @@ export function useSalesPerformance() {
           setRawData(list);
 
           if (list.length > 0) {
-            const initialOffice = list[0].sales_office || "";
+            const offices = sortedUnique(list.map((item) => item.sales_office));
+            const initialOffice =
+              offices.find((office) => /^S003\b/i.test(office)) ||
+              offices.find((office) => /\bSO\s*3\b/i.test(office)) ||
+              offices[0] ||
+              "";
             
             // Hitung grup produk awal untuk office terpilih
             const groups = sortedUnique(
@@ -123,7 +128,8 @@ export function useSalesPerformance() {
       const result = await salesApi.getPerformance(
         selectedOffice,
         selectedGroup,
-        selectedSalesman
+        selectedSalesman,
+        reportPeriod
       );
       setCurrentData(result);
     } catch (err) {
@@ -132,7 +138,7 @@ export function useSalesPerformance() {
     } finally {
       setLoading(false);
     }
-  }, [selectedOffice, selectedGroup, selectedSalesman]);
+  }, [selectedOffice, selectedGroup, selectedSalesman, reportPeriod]);
 
   useEffect(() => {
     let ignore = false;
@@ -144,7 +150,8 @@ export function useSalesPerformance() {
         const result = await salesApi.getPerformance(
           selectedOffice,
           selectedGroup,
-          selectedSalesman
+          selectedSalesman,
+          reportPeriod
         );
         if (!ignore) {
           setCurrentData(result);
@@ -162,7 +169,7 @@ export function useSalesPerformance() {
 
     loadData();
     return () => { ignore = true; };
-  }, [selectedOffice, selectedGroup, selectedSalesman]);
+  }, [selectedOffice, selectedGroup, selectedSalesman, reportPeriod]);
 
   return {
     availableOffices,

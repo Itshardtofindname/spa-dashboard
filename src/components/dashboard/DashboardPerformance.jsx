@@ -4,8 +4,8 @@ import MonthlyTrackRecord from './MonthlyTrackRecord';
 import ActionPlanSection from './ActionPlanSection';
 import { useSalesPerformance } from '../../composables/useSalesPerformance';
 import ResponsiveSelect from '../ResponsiveSelect';
-
-export default function DashboardPerformance() {
+// import GoogleDriveScorecardImport from '../GoogleDriveScorecardImport';
+export default function DashboardPerformance({ reportPeriod = '2026-09-01' }) {
   const {
     availableOffices,
     availableGroups,
@@ -20,20 +20,20 @@ export default function DashboardPerformance() {
     loading,
     error,
     refetch,
-  } = useSalesPerformance();
+  } = useSalesPerformance(reportPeriod);
 
   return (
     <div className="space-y-4">
       {/* Dynamic Cascading Filter Selection Bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3">
+      <div className="grid min-w-0 grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2 xl:grid-cols-3">
         
         {/* 1. Filter Sales Office */}
-        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 w-full md:flex md:w-auto">
+        <div className="grid min-w-0 w-full grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2">
           <span className="text-xs font-bold leading-tight text-slate-600">SALES OFFICE:</span>
           <ResponsiveSelect
             value={selectedOffice}
             onChange={(e) => setSelectedOffice(e.target.value)}
-            className="min-w-0 text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800"
+            className="min-w-0 w-full rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-rose-800"
           >
             {availableOffices.map((office, idx) => (
               <option key={idx} value={office}>
@@ -44,13 +44,13 @@ export default function DashboardPerformance() {
         </div>
 
         {/* 2. Filter Grup Product (Filter Bertingkat) */}
-        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 w-full md:flex md:w-auto">
+        <div className="grid min-w-0 w-full grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2">
           <span className="text-xs font-bold leading-tight text-slate-600">GRUP PRODUCT:</span>
           <ResponsiveSelect
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
             disabled={!availableGroups.length}
-            className="min-w-0 text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800 disabled:opacity-50"
+            className="min-w-0 w-full rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-rose-800 disabled:opacity-50"
           >
             {availableGroups.map((group, idx) => (
               <option key={idx} value={group}>
@@ -61,13 +61,13 @@ export default function DashboardPerformance() {
         </div>
 
         {/* 3. Filter Salesman (Filter Bertingkat) */}
-        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 w-full md:flex md:w-auto">
+        <div className="grid min-w-0 w-full grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2">
           <span className="text-xs font-bold leading-tight text-slate-600">SALESMAN:</span>
           <ResponsiveSelect
             value={selectedSalesman}
             onChange={(e) => setSelectedSalesman(e.target.value)}
             disabled={!availableSalesmen.length}
-            className="min-w-0 text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-slate-50 font-medium w-full md:w-64 focus:outline-none focus:ring-1 focus:ring-rose-800 disabled:opacity-50"
+            className="min-w-0 w-full rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-rose-800 disabled:opacity-50"
           >
             {availableSalesmen.map((sales, idx) => (
               <option key={idx} value={sales}>
@@ -77,6 +77,8 @@ export default function DashboardPerformance() {
           </ResponsiveSelect>
         </div>
       </div>
+
+      {/* <GoogleDriveScorecardImport /> */}
 
       {/* Indicator Status */}
       {loading && (
@@ -97,8 +99,12 @@ export default function DashboardPerformance() {
       {/* Render Widget Dashboard */}
       {!loading && !error && currentData && (
         <>
-          <SalesProfileCard data={currentData} />
-          <ScorecardTable scorecards={currentData.scorecard || []} />
+          <SalesProfileCard data={currentData} reportPeriod={reportPeriod} />
+          <ScorecardTable
+            salesOffice={selectedOffice}
+            reportPeriod={reportPeriod}
+            selectedNpk={currentData.identity?.npk}
+          />
           <MonthlyTrackRecord records={currentData.trackRecord || []} />
           <ActionPlanSection data={currentData} />
         </>
