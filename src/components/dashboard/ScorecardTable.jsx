@@ -279,8 +279,8 @@ export default function App({
 
   // Fetch data tidak mengubah state secara sinkron sebelum request dimulai.
   const fetchScorecard = useCallback(async (signal) => {
-    setLoading(true);
-    setError('');
+    // setLoading(true);
+    // setError('');
     try {
       const query = new URLSearchParams({
         sales_office: salesOffice,

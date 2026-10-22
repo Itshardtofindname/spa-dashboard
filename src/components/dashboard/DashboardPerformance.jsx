@@ -4,7 +4,7 @@ import MonthlyTrackRecord from './MonthlyTrackRecord';
 import ActionPlanSection from './ActionPlanSection';
 import { useSalesPerformance } from '../../composables/useSalesPerformance';
 import ResponsiveSelect from '../ResponsiveSelect';
-
+import GoogleDriveScorecardImport from './GoogleDriveScorecardImport';
 export default function DashboardPerformance() {
   const {
     availableOffices,
@@ -77,6 +77,8 @@ export default function DashboardPerformance() {
           </ResponsiveSelect>
         </div>
       </div>
+
+      <GoogleDriveScorecardImport />
 
       {/* Indicator Status */}
       {loading && (
