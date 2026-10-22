@@ -24,7 +24,7 @@ function formatScore(value) {
   });
 }
 
-export default function SalesProfileCard({ data }) {
+export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) {
   if (!data) return null;
 
   const identity = data.identity || {};
@@ -65,6 +65,10 @@ export default function SalesProfileCard({ data }) {
   const keterangan = finalGrade.keterangan;
 
   const pilar = data.breakdownPilar || {};
+  const periodLabel = new Date(`${reportPeriod}T00:00:00`).toLocaleDateString("id-ID", {
+    month: "long",
+    year: "numeric",
+  });
 
   const hasPilar =
     pilar.pilar1 != null ||
@@ -150,7 +154,7 @@ export default function SalesProfileCard({ data }) {
       <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex h-full flex-col gap-3">
         <div className="flex justify-between items-center bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold">
           <span>FINAL GRADE</span>
-          <span>September 2026</span>
+          <span>{periodLabel}</span>
         </div>
 
         <div className="flex min-h-36 flex-1 flex-col items-center justify-center rounded-lg bg-slate-50 px-3 py-4 text-center">

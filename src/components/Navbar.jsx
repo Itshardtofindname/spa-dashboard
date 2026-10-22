@@ -1,11 +1,15 @@
-import { useState } from 'react';
 import ResponsiveSelect from './ResponsiveSelect';
 import logoImg from '../assets/logo.png';
 import { monthList, yearList } from '../data/dataSales';
 
-export default function Navbar({ salesmanData, onLogout }) {
-  const [selectedMonth, setSelectedMonth] = useState(monthList[8] || "SEPTEMBER");
-  const [selectedYear, setSelectedYear] = useState(yearList[2] || "2026");
+export default function Navbar({ salesmanData, onLogout, selectedPeriod = '2026-09-01', onPeriodChange }) {
+  const [year = '2026', month = '09'] = selectedPeriod.split('-');
+  const selectedMonth = monthList[Number(month) - 1] || monthList[8];
+
+  const updatePeriod = (nextMonth, nextYear) => {
+    const monthNumber = String(monthList.indexOf(nextMonth) + 1).padStart(2, '0');
+    onPeriodChange?.(`${nextYear}-${monthNumber}-01`);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#94ABDE] shadow-sm">
@@ -33,8 +37,8 @@ export default function Navbar({ salesmanData, onLogout }) {
           <div className="hidden items-center gap-1.5 rounded-lg border border-slate-400 bg-white/50 px-2.5 py-1.5 text-xs text-black md:flex">
             <span className="font-bold mr-1">Periode:</span>
             <ResponsiveSelect 
-              value={selectedMonth} 
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              value={selectedMonth}
+              onChange={(e) => updatePeriod(e.target.value, year)}
               className="bg-transparent font-semibold text-black focus:outline-none cursor-pointer"
             >
               {monthList.map((m, idx) => (
@@ -42,8 +46,8 @@ export default function Navbar({ salesmanData, onLogout }) {
               ))}
             </ResponsiveSelect>
             <ResponsiveSelect 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(e.target.value)}
+              value={year}
+              onChange={(e) => updatePeriod(selectedMonth, e.target.value)}
               className="bg-transparent font-semibold text-black focus:outline-none cursor-pointer"
             >
               {yearList.map((y, idx) => (

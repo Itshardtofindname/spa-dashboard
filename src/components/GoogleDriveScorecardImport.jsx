@@ -1,123 +1,164 @@
-import { useState } from 'react';
+
+import { useCallback, useEffect, useState } from 'react';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const APP_ID = import.meta.env.VITE_GOOGLE_APP_ID;
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-const GOOGLE_API_SCRIPT = 'https://apis.google.com/js/api.js';
-const GOOGLE_IDENTITY_SCRIPT = 'https://accounts.google.com/gsi/client';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+
+const IMPORT_TOKEN = import.meta.env.VITE_SCORECARD_IMPORT_TOKEN || '';
 
 const XLSX_MIME =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-function loadScript(src, isReady) {
-  if (isReady()) {
-    return Promise.resolve();
-  }
+function getSyncEndpoint() {
+  const base = API_BASE_URL.replace(/\/+$/, '');
 
+  return /\/api$/i.test(base)
+    ? `${base}/scorecard/sync-drive`
+    : `${base}/api/scorecard/sync-drive`;
+}
+
+function getProductivityEndpoint() {
+  const base = API_BASE_URL.replace(/\/+$/, '');
+
+  return /\/api$/i.test(base)
+    ? `${base}/scorecard/productivity`
+    : `${base}/api/scorecard/productivity`;
+}
+
+function loadScript(src) {
   return new Promise((resolve, reject) => {
-    let script = document.querySelector(`script[src="${src}"]`);
+    const existing = document.querySelector(`script[src="${src}"]`);
 
-    if (script?.dataset.loaded === 'true') {
-      if (isReady()) {
+    if (existing) {
+      if (existing.dataset.loaded === 'true') {
         resolve();
         return;
       }
+
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener(
+        'error',
+        () => reject(new Error(`Gagal memuat script: ${src}`)),
+        { once: true },
+      );
+      return;
     }
 
-    const handleLoad = () => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.defer = true;
+
+    script.onload = () => {
       script.dataset.loaded = 'true';
-      cleanup();
-
-      if (isReady()) {
-        resolve();
-      } else {
-        reject(new Error(`Pustaka Google tidak siap: ${src}`));
-      }
+      resolve();
     };
 
-    const handleError = () => {
-      cleanup();
-      reject(new Error(`Gagal memuat pustaka Google: ${src}`));
+    script.onerror = () => {
+      script.remove();
+      reject(new Error(`Gagal memuat script: ${src}`));
     };
 
-    const cleanup = () => {
-      script?.removeEventListener('load', handleLoad);
-      script?.removeEventListener('error', handleError);
-    };
-
-    if (!script) {
-      script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      document.head.appendChild(script);
-    }
-
-    script.addEventListener('load', handleLoad, { once: true });
-    script.addEventListener('error', handleError, { once: true });
+    document.head.appendChild(script);
   });
 }
 
-function getApiEndpoint() {
-  const configuredBaseUrl =
-    import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+async function loadGooglePicker() {
+  await loadScript('https://apis.google.com/js/api.js');
+  await loadScript('https://accounts.google.com/gsi/client');
 
-  const baseUrl = configuredBaseUrl.replace(/\/+$/, '');
+  await new Promise((resolve, reject) => {
+    if (!window.gapi?.load) {
+      reject(new Error('Google API belum tersedia.'));
+      return;
+    }
 
-  if (/\/api$/i.test(baseUrl)) {
-    return `${baseUrl}/scorecard/sync-drive`;
-  }
-
-  return `${baseUrl}/api/scorecard/sync-drive`;
+    window.gapi.load('picker', {
+      callback: resolve,
+      onerror: () => reject(new Error('Google Picker gagal dimuat.')),
+      timeout: 15000,
+      ontimeout: () => reject(new Error('Google Picker timeout.')),
+    });
+  });
 }
 
 export default function GoogleDriveScorecardImport() {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [importToken, setImportToken] = useState('');
+  const [salesOffice, setSalesOffice] = useState('S003 - SO SERPONG');
+  const [reportPeriod, setReportPeriod] = useState('2026-10-01');
+
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState('');
   const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
-  const [status, setStatus] = useState('Siap memilih file.');
-  const [loading, setLoading] = useState(false);
-  const [pickerLoading, setPickerLoading] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const [sourceFiles, setSourceFiles] = useState([]);
+  const [sourceLoading, setSourceLoading] = useState(true);
+  const [sourceRefresh, setSourceRefresh] = useState(0);
 
-  function showError(message) {
-    setError(message);
-    setStatus('Proses gagal.');
-    setPickerLoading(false);
-  }
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      sales_office: salesOffice.trim(),
+      report_period: reportPeriod,
+    });
 
-  async function chooseFile() {
-    setError('');
+    async function loadSourceFile() {
+      setSourceLoading(true);
+
+      try {
+        const response = await fetch(
+          `${getProductivityEndpoint()}?${params.toString()}`,
+          { headers: { Accept: 'application/json' }, signal: controller.signal },
+        );
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const body = await response.json();
+        const records = Array.isArray(body)
+          ? body
+          : Array.isArray(body?.data)
+            ? body.data
+            : [];
+        const files = [...new Set(
+          records.map((row) => row.source_file).filter(Boolean),
+        )];
+
+        if (!controller.signal.aborted) setSourceFiles(files);
+      } catch {
+        if (!controller.signal.aborted) setSourceFiles([]);
+      } finally {
+        if (!controller.signal.aborted) setSourceLoading(false);
+      }
+    }
+
+    loadSourceFile();
+    return () => controller.abort();
+  }, [salesOffice, reportPeriod, sourceRefresh]);
+
+  const resetValidation = () => {
+    setValidated(false);
     setResult(null);
-    setSelectedFile(null);
-    setPickerLoading(true);
-    setStatus('Memuat pustaka Google...');
+  };
+
+  const chooseFile = useCallback(async () => {
+    setStatus('');
+    resetValidation();
+
+    if (!API_KEY || !APP_ID || !CLIENT_ID) {
+      setStatus(
+        'Konfigurasi Google belum lengkap. Periksa VITE_GOOGLE_API_KEY, VITE_GOOGLE_APP_ID, dan VITE_GOOGLE_CLIENT_ID.',
+      );
+      return;
+    }
+
+    setBusy(true);
 
     try {
-      if (!API_KEY || !APP_ID || !CLIENT_ID) {
-        throw new Error(
-          'Konfigurasi Google Picker belum lengkap. Periksa ' +
-            'VITE_GOOGLE_API_KEY, VITE_GOOGLE_APP_ID, dan ' +
-            'VITE_GOOGLE_CLIENT_ID.'
-        );
-      }
-
-      await Promise.all([
-        loadScript(
-          GOOGLE_API_SCRIPT,
-          () => Boolean(window.gapi)
-        ),
-        loadScript(
-          GOOGLE_IDENTITY_SCRIPT,
-          () => Boolean(window.google?.accounts?.oauth2)
-        ),
-      ]);
-
-      if (!window.gapi || !window.google?.accounts?.oauth2) {
-        throw new Error('Pustaka autentikasi Google tidak tersedia.');
-      }
-
-      setStatus('Meminta izin akses Google Drive...');
+      await loadGooglePicker();
 
       const tokenClient =
         window.google.accounts.oauth2.initTokenClient({
@@ -129,290 +170,428 @@ export default function GoogleDriveScorecardImport() {
               tokenResponse.error ||
               !tokenResponse.access_token
             ) {
-              console.error('Google OAuth gagal:', {
-                error: tokenResponse.error,
-                description: tokenResponse.error_description,
-              });
-
-              showError(
-                'Autentikasi Google gagal: ' +
-                  (tokenResponse.error_description ||
-                    tokenResponse.error ||
-                    'Token akses tidak tersedia.')
+              setBusy(false);
+              setStatus(
+                `Login Google gagal: ${
+                  tokenResponse.error || 'token tidak diterima'
+                }`,
               );
               return;
             }
 
-            setStatus('Membuka Google Picker...');
+            try {
+              const pickerApi = window.google.picker;
 
-            window.gapi.load('picker', {
-              callback: () => {
-                try {
-                  if (!window.google?.picker) {
-                    throw new Error(
-                      'Pustaka Google Picker tidak tersedia.'
+              const view = new pickerApi.DocsView(
+                pickerApi.ViewId.DOCS,
+              );
+
+              view.setMimeTypes(XLSX_MIME);
+              view.setIncludeFolders(false);
+
+              const picker = new pickerApi.PickerBuilder()
+                .setAppId(APP_ID)
+                .setDeveloperKey(API_KEY)
+                .setOAuthToken(tokenResponse.access_token)
+                .setOrigin(window.location.origin)
+                .addView(view)
+                .setTitle('Pilih file Scorecard Excel')
+                .setCallback((data) => {
+                  const action = data[pickerApi.Response.ACTION];
+
+                  if (action === pickerApi.Action.PICKED) {
+                    const docs =
+                      data[pickerApi.Response.DOCUMENTS] ||
+                      data.docs ||
+                      [];
+
+                    const doc = docs[0];
+
+                    if (!doc?.id) {
+                      setSelectedFile(null);
+                      resetValidation();
+                      setStatus(
+                        'File dipilih, tetapi ID file tidak ditemukan.',
+                      );
+                      setBusy(false);
+                      return;
+                    }
+
+                    setSelectedFile({
+                      id: doc.id,
+                      name:
+                        doc[pickerApi.Document.NAME] ||
+                        doc.name ||
+                        'File Excel terpilih',
+                      mimeType:
+                        doc[pickerApi.Document.MIME_TYPE] ||
+                        doc.mimeType ||
+                        XLSX_MIME,
+                    });
+
+                    resetValidation();
+
+                    setStatus(
+                      'File dipilih. Klik "Validasi Excel" untuk melanjutkan.',
+                    );
+                  } else if (
+                    action === pickerApi.Action.CANCEL
+                  ) {
+                    setStatus('Pemilihan file dibatalkan.');
+                  } else if (
+                    action === pickerApi.Action.ERROR ||
+                    action === 'error'
+                  ) {
+                    setStatus(
+                      'Google Picker melaporkan error. Periksa konfigurasi Google API dan respons Network.',
                     );
                   }
 
-                  const pickerApi = window.google.picker;
+                  setBusy(false);
+                })
+                .build();
 
-                  const view = new pickerApi.DocsView(
-                    pickerApi.ViewId.DOCS
-                  )
-                    .setMimeTypes(XLSX_MIME)
-                    .setIncludeFolders(false);
-
-                  const picker = new pickerApi.PickerBuilder()
-                    .setAppId(APP_ID)
-                    .setDeveloperKey(API_KEY)
-                    .setOAuthToken(tokenResponse.access_token)
-                    .setOrigin(window.location.origin)
-                    .addView(view)
-                    .setCallback((data) => {
-                      const action = data?.action;
-
-                      console.info('Google Picker action:', action);
-
-                      if (action === pickerApi.Action.CANCEL) {
-                        setStatus('Pemilihan file dibatalkan.');
-                        setPickerLoading(false);
-                        return;
-                      }
-
-                      if (action === pickerApi.Action.PICKED) {
-                        const documents =
-                          data[pickerApi.Response.DOCUMENTS] ||
-                          data.docs ||
-                          [];
-
-                        const file = documents[0];
-
-                        if (!file?.id) {
-                          showError(
-                            'Google Picker tidak mengembalikan ID file.'
-                          );
-                          return;
-                        }
-
-                        setSelectedFile({
-                          id: file.id,
-                          name: file.name || 'File Excel',
-                        });
-
-                        setResult(null);
-                        setError('');
-                        setStatus(
-                          'File dipilih. Tekan "Validasi tanpa impor" untuk menguji backend.'
-                        );
-                        setPickerLoading(false);
-
-                        console.info('File berhasil dipilih:', {
-                          name: file.name || 'File Excel',
-                          hasId: Boolean(file.id),
-                        });
-
-                        return;
-                      }
-
-                      if (
-                        action === pickerApi.Action.ERROR ||
-                        action === 'error'
-                      ) {
-                        console.error('Google Picker error:', {
-                          action,
-                          message:
-                            data.errorMessage || data.error || null,
-                        });
-
-                        showError(
-                          'Google Picker gagal memproses permintaan. ' +
-                            'Periksa API key, OAuth, dan Console.'
-                        );
-                      }
-                    })
-                    .build();
-
-                  picker.setVisible(true);
-                  setStatus('Pilih file Excel dari Google Drive.');
-                  setPickerLoading(false);
-                } catch (err) {
-                  console.error('Picker initialization failed:', err);
-                  showError(
-                    err.message || 'Google Picker gagal diinisialisasi.'
-                  );
-                }
-              },
-            });
-          },
-
-          error_callback: (oauthError) => {
-            // Jangan mencatat access token atau data rahasia.
-            console.error('Google OAuth popup gagal:', {
-              type: oauthError?.type,
-              message: oauthError?.message,
-            });
-
-            showError(
-              'Jendela autentikasi Google gagal dibuka. ' +
-                'Periksa popup, OAuth Client ID, dan Console.'
-            );
+              picker.setVisible(true);
+            } catch (error) {
+              setBusy(false);
+              setStatus(
+                error.message || 'Gagal membuka Google Picker.',
+              );
+            }
           },
         });
 
-      tokenClient.requestAccessToken();
-    } catch (err) {
-      console.error('Google Picker setup gagal:', err);
-      showError(err.message || 'Google Picker gagal dibuka.');
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    } catch (error) {
+      setBusy(false);
+      setStatus(error.message || 'Gagal memuat Google Picker.');
     }
-  }
+  }, []);
 
-  async function validateFile() {
+  const validateFile = async () => {
+    setStatus('');
+    resetValidation();
+
     if (!selectedFile?.id) {
-      showError('Pilih file Excel terlebih dahulu.');
+      setStatus(
+        'Pilih file Excel dari Google Drive terlebih dahulu.',
+      );
       return;
     }
 
-    if (!importToken.trim()) {
-      showError('Masukkan token impor backend.');
+    if (!IMPORT_TOKEN) {
+      setStatus(
+        'Token impor belum dikonfigurasi. Periksa VITE_SCORECARD_IMPORT_TOKEN pada environment frontend, lalu restart Vite.',
+      );
       return;
     }
 
-    setLoading(true);
-    setError('');
-    setResult(null);
-    setStatus('Mengirim permintaan validasi ke backend...');
+    if (!salesOffice.trim() || !reportPeriod) {
+      setStatus('Sales office dan periode laporan wajib diisi.');
+      return;
+    }
+
+    setBusy(true);
+
+    const params = new URLSearchParams({
+      sales_office: salesOffice.trim(),
+      report_period: reportPeriod,
+      dry_run: 'true',
+      file_id: selectedFile.id,
+    });
 
     try {
-      const endpoint = getApiEndpoint();
-
-      const params = new URLSearchParams({
-        sales_office: 'S003 - SO SERPONG',
-        report_period: '2026-10-01',
-        dry_run: 'true',
-        file_id: selectedFile.id,
-      });
-
-      console.info('Mengirim validasi scorecard:', {
-        endpoint,
-        fileName: selectedFile.name,
-        dryRun: true,
-      });
-
       const response = await fetch(
-        `${endpoint}?${params.toString()}`,
+        `${getSyncEndpoint()}?${params.toString()}`,
         {
           method: 'POST',
           headers: {
-            'X-Import-Token': importToken.trim(),
+            'X-Import-Token': IMPORT_TOKEN,
           },
-        }
+        },
       );
 
-      const responseText = await response.text();
-
-      let body = {};
-
-      try {
-        body = responseText ? JSON.parse(responseText) : {};
-      } catch {
-        body = { detail: responseText };
-      }
+      const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        const detail =
+          typeof body.detail === 'string'
+            ? body.detail
+            : JSON.stringify(body.detail || body);
+
         throw new Error(
-          body.detail ||
-            body.message ||
-            `Validasi gagal dengan HTTP ${response.status}.`
+          `HTTP ${response.status}: ${
+            detail || response.statusText
+          }`,
+        );
+      }
+
+      if (body.dry_run !== true) {
+        throw new Error(
+          'Backend tidak mengonfirmasi hasil validasi dry-run.',
         );
       }
 
       setResult(body);
-      setStatus('Validasi backend selesai.');
-    } catch (err) {
-      console.error('Scorecard validation failed:', err);
+      setValidated(true);
 
-      showError(
-        `${err.message || 'Validasi file gagal.'} ` +
-          'Periksa URL backend, token, dan log backend.'
+      setStatus(
+        `Validasi berhasil. ${
+          body.sheet_rows_imported ?? 0
+        } baris siap diimpor. Database belum diubah.`,
+      );
+    } catch (error) {
+      setStatus(
+        `Validasi gagal: ${error.message}. Pastikan backend aktif, URL API benar, token sesuai, dan CORS mengizinkan origin frontend.`,
       );
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
-  }
+  };
+
+  const importFile = async () => {
+    if (!selectedFile?.id) {
+      setStatus(
+        'Pilih file Excel dari Google Drive terlebih dahulu.',
+      );
+      return;
+    }
+
+    if (!validated || result?.dry_run !== true) {
+      setStatus(
+        'Validasi file harus berhasil sebelum impor.',
+      );
+      return;
+    }
+
+    if (!IMPORT_TOKEN) {
+      setStatus('Token impor belum dikonfigurasi.');
+      return;
+    }
+
+    if (!salesOffice.trim() || !reportPeriod) {
+      setStatus('Sales office dan periode laporan wajib diisi.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Impor ${result.sheet_rows_imported ?? 0} baris ke database?\n\n` +
+        `Sales office: ${salesOffice}\n` +
+        `Periode: ${reportPeriod}\n` +
+        `File: ${selectedFile.name}\n\n` +
+        'Pastikan kantor, periode, dan file sudah benar. Database akan diubah.',
+    );
+
+    if (!confirmed) return;
+
+    setBusy(true);
+    setStatus('Sedang mengimpor data ke database...');
+
+    const params = new URLSearchParams({
+      sales_office: salesOffice.trim(),
+      report_period: reportPeriod,
+      dry_run: 'false',
+      file_id: selectedFile.id,
+    });
+
+    try {
+      const response = await fetch(
+        `${getSyncEndpoint()}?${params.toString()}`,
+        {
+          method: 'POST',
+          headers: {
+            'X-Import-Token': IMPORT_TOKEN,
+          },
+        },
+      );
+
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const detail =
+          typeof body.detail === 'string'
+            ? body.detail
+            : JSON.stringify(body.detail || body);
+
+        throw new Error(
+          `HTTP ${response.status}: ${
+            detail || response.statusText
+          }`,
+        );
+      }
+
+      setResult(body);
+      setValidated(false);
+      if (body.sync_status === 'synced') {
+        setSourceRefresh((value) => value + 1);
+      }
+
+      if (body.sync_status === 'synced') {
+        setStatus(
+          'Impor selesai. Backend melaporkan sinkronisasi berhasil.',
+        );
+      } else if (body.changed === false) {
+        setStatus(
+          body.message ||
+            'Tidak ada perubahan yang diperlukan. Periksa detail hasil impor.',
+        );
+      } else {
+        setStatus(
+          body.message ||
+            'Permintaan impor berhasil diproses. Periksa detail respons backend.',
+        );
+      }
+    } catch (error) {
+      setStatus(
+        `Impor gagal: ${error.message}. Periksa respons backend sebelum mencoba kembali.`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <div>
-        <h2 className="text-base font-bold text-slate-800">
+    <section className="mx-auto w-full max-w-4xl space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold text-slate-900">
           Import Scorecard dari Google Drive
-        </h2>
+        </h1>
 
-        <p className="mt-1 text-sm text-slate-500">
-          Pilih file Excel periode Oktober 2026 dan validasi
-          sebelum melakukan perubahan database.
+        <p className="mt-2 text-sm text-slate-600">
+          Pilih workbook, validasi data, lalu impor ke database
+          setelah hasil validasi dinyatakan benar.
         </p>
-      </div>
+      </header>
 
-      <button
-        type="button"
-        onClick={chooseFile}
-        disabled={pickerLoading}
-        className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {pickerLoading ? 'Memproses Google...' : 'Pilih File Excel'}
-      </button>
-
-      {selectedFile && (
-        <div className="rounded-md bg-slate-50 p-3 text-sm">
-          <p className="font-semibold">{selectedFile.name}</p>
-          <p className="mt-1 text-slate-600">
-            File berhasil dipilih.
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm">
+          <p className="font-semibold text-slate-800">Excel yang digunakan bersama</p>
+          <p className="mt-1 break-words text-slate-700">
+            {sourceLoading
+              ? 'Memeriksa sumber Excel...'
+              : sourceFiles.length
+                ? sourceFiles.join(', ')
+                : 'Belum ada nama Excel pada data periode ini.'}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Sumber diambil dari data Scorecard yang tersimpan di database untuk kantor dan periode terpilih.
           </p>
         </div>
-      )}
 
-      <div>
-        <label
-          htmlFor="scorecard-import-token"
-          className="mb-1 block text-sm font-medium text-slate-700"
-        >
-          Token impor backend
-        </label>
+        <div>
+          <label
+            htmlFor="scorecard-office"
+            className="mb-1 block text-sm font-medium text-slate-700"
+          >
+            Sales office
+          </label>
 
-        <input
-          id="scorecard-import-token"
-          type="password"
-          autoComplete="off"
-          value={importToken}
-          onChange={(event) => setImportToken(event.target.value)}
-          placeholder="Masukkan token dari konfigurasi backend"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-        />
+          <input
+            id="scorecard-office"
+            value={salesOffice}
+            onChange={(event) => {
+              setSalesOffice(event.target.value);
+              resetValidation();
+            }}
+            disabled={busy}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 disabled:bg-slate-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="scorecard-period"
+            className="mb-1 block text-sm font-medium text-slate-700"
+          >
+            Periode laporan
+          </label>
+
+          <input
+            id="scorecard-period"
+            type="date"
+            value={reportPeriod}
+            onChange={(event) => {
+              setReportPeriod(event.target.value);
+              resetValidation();
+            }}
+            disabled={busy}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 disabled:bg-slate-100"
+          />
+
+          <p className="mt-1 text-xs text-slate-500">
+            Pilih tanggal pertama pada bulan laporan, misalnya
+            1 Oktober 2026.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={chooseFile}
+            disabled={busy}
+            className="rounded-lg bg-slate-800 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy ? 'Memproses...' : 'Pilih file Google Drive'}
+          </button>
+
+          <button
+            type="button"
+            onClick={validateFile}
+            disabled={busy || !selectedFile}
+            className="rounded-lg bg-blue-700 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Validasi Excel
+          </button>
+
+          {validated && result?.dry_run === true && (
+            <button
+              type="button"
+              onClick={importFile}
+              disabled={busy}
+              className="rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {busy ? 'Memproses...' : 'Impor ke Database'}
+            </button>
+          )}
+        </div>
+
+        {selectedFile && (
+          <div className="rounded-lg bg-slate-50 p-3 text-sm">
+            <p className="font-semibold text-slate-800">
+              File terpilih
+            </p>
+
+            <p className="mt-1 break-words text-slate-700">
+              {selectedFile.name}
+            </p>
+
+            <p className="mt-1 break-all text-xs text-slate-500">
+              ID: {selectedFile.id}
+            </p>
+          </div>
+        )}
+
+        {status && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="whitespace-pre-wrap rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700"
+          >
+            {status}
+          </div>
+        )}
       </div>
 
-      <button
-        type="button"
-        disabled={!selectedFile || !importToken.trim() || loading}
-        onClick={validateFile}
-        className="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {loading ? 'Memvalidasi...' : 'Validasi tanpa impor'}
-      </button>
-
-      <p className="text-sm text-slate-600" role="status">
-        Status: {status}
-      </p>
-
-      {error && (
-        <p role="alert" className="break-words text-sm text-rose-700">
-          {error}
-        </p>
-      )}
-
       {result && (
-        <pre className="max-h-96 overflow-auto rounded-md bg-slate-50 p-3 text-xs">
-          {JSON.stringify(result, null, 2)}
-        </pre>
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Hasil {result.dry_run === true ? 'validasi' : 'proses impor'}
+          </h2>
+
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-lg bg-slate-950 p-4 text-xs text-slate-100">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </div>
       )}
     </section>
   );

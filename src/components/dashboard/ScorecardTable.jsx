@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from "../../api/axiosClient";
 
 const DEFAULT_OFFICE = 'S003 - SO SERPONG';
-const DEFAULT_PERIOD = '2026-10-01';
+const DEFAULT_PERIOD = '2026-09-01';
 
 const MONTH_ORDER = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun',
@@ -251,13 +251,12 @@ function normalizeRecords(result) {
 export default function App({
   salesOffice = DEFAULT_OFFICE,
   reportPeriod = DEFAULT_PERIOD,
-  selectedNpk = null,
+  // selectedNpk = null,
 }) {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState('');
   const [phFilter, setPhFilter] = useState('ALL');
   const [selectedSalesman, setSelectedSalesman] = useState(null);
-  const [dismissedNpk, setDismissedNpk] = useState(null);
   const [notification, setNotification] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -387,37 +386,20 @@ export default function App({
     });
   }, [data, search, phFilter]);
 
-  // Tentukan salesman untuk modal tanpa setState di dalam useEffect.
-  const activeSalesman = useMemo(() => {
-    if (selectedSalesman) {
-      return selectedSalesman;
-    }
+  const sourceFiles = useMemo(
+    () => [...new Set(data.map((row) => row.source_file).filter(Boolean))],
+    [data],
+  );
 
-    if (
-      !selectedNpk ||
-      normalizeNpk(selectedNpk) === dismissedNpk
-    ) {
-      return null;
-    }
-
-    return (
-      data.find(
-        (row) => normalizeNpk(row.npk) === normalizeNpk(selectedNpk)
-      ) || null
-    );
-  }, [selectedSalesman, selectedNpk, dismissedNpk, data]);
+  // Modal detail hanya dibuka setelah pengguna mengklik baris salesman.
+  const activeSalesman = selectedSalesman;
 
   const openSalesmanModal = (row) => {
     setSelectedSalesman(row);
-    setDismissedNpk(null);
   };
 
   const closeSalesmanModal = () => {
     setSelectedSalesman(null);
-
-    if (selectedNpk) {
-      setDismissedNpk(normalizeNpk(selectedNpk));
-    }
   };
 
   const refreshScorecard = () => {
@@ -476,7 +458,7 @@ export default function App({
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 pb-12 font-sans text-slate-900">
+    <div className="w-full font-sans text-slate-900">
       {notification && (
         <div
           role="status"
@@ -487,7 +469,8 @@ export default function App({
         </div>
       )}
 
-      <header className="flex flex-col items-center justify-between gap-4 bg-slate-900 px-4 py-4 text-white shadow-md sm:px-6 md:flex-row">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <header className="flex flex-col items-center justify-between gap-4 bg-slate-900 px-4 py-4 text-white sm:px-6 md:flex-row">
         <div className="min-w-0">
           <h1 className="flex items-center gap-2 text-sm font-bold sm:text-base">
             <span>📊</span>
@@ -536,8 +519,8 @@ export default function App({
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] p-3 sm:p-4 md:p-6">
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow">
+      <main className="w-full">
+        <section className="overflow-hidden bg-white">
           <div className="flex flex-col justify-between gap-3 border-b border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center">
             <div>
               <h2 className="text-sm font-extrabold uppercase text-slate-800">
@@ -546,6 +529,14 @@ export default function App({
 
               <p className="mt-1 text-[11px] text-slate-500">
                 Data sumber: RAPOT Produktifitas dari Supabase
+              </p>
+              <p className="mt-1 break-words text-[11px] text-slate-600">
+                Excel digunakan:{' '}
+                <span className="font-semibold text-slate-800">
+                  {sourceFiles.length
+                    ? sourceFiles.join(', ')
+                    : 'Nama file tidak tersedia pada data periode ini'}
+                </span>
               </p>
             </div>
 
@@ -755,6 +746,7 @@ export default function App({
           )}
         </section>
       </main>
+      </div>
 
       {activeSalesman && (
         <div
