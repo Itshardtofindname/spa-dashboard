@@ -24,7 +24,10 @@ function formatScore(value) {
   });
 }
 
-export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) {
+export default function SalesProfileCard({
+  data,
+  reportPeriod = "2026-09-01",
+}) {
   if (!data) return null;
 
   const identity = data.identity || {};
@@ -65,7 +68,14 @@ export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) 
   const keterangan = finalGrade.keterangan;
 
   const pilar = data.breakdownPilar || {};
-  const periodLabel = new Date(`${reportPeriod}T00:00:00`).toLocaleDateString("id-ID", {
+
+  const summScorecard = Array.isArray(data.summScorecard)
+    ? data.summScorecard
+    : [];
+
+  const periodLabel = new Date(
+    `${reportPeriod}T00:00:00`
+  ).toLocaleDateString("id-ID", {
     month: "long",
     year: "numeric",
   });
@@ -83,6 +93,24 @@ export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) 
         : finalStatus === "LOW"
           ? "bg-rose-600"
           : "bg-slate-400";
+
+  const pilarItems = [
+    {
+      key: "pilar1",
+      title: "Pilar 1: RESULT",
+      description: "Sales Achievement & Growth",
+    },
+    {
+      key: "pilar2",
+      title: "Pilar 2: STRATEGIC ALIGNMENT",
+      description: "Cross Sell, Outlet, & Repeat Order",
+    },
+    {
+      key: "pilar3",
+      title: "Pilar 3: PROCESS",
+      description: "Daftar Kunjungan Sales (DKS)",
+    },
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -198,23 +226,7 @@ export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) 
         </div>
 
         <div className="space-y-2 text-xs">
-          {[
-            {
-              key: "pilar1",
-              title: "Pilar 1: RESULT",
-              description: "Sales Achievement & Growth",
-            },
-            {
-              key: "pilar2",
-              title: "Pilar 2: STRATEGIC ALIGNMENT",
-              description: "Cross Sell, Outlet, & Repeat Order",
-            },
-            {
-              key: "pilar3",
-              title: "Pilar 3: PROCESS",
-              description: "Daftar Kunjungan Sales (DKS)",
-            },
-          ].map((item) => (
+          {pilarItems.map((item) => (
             <div
               key={item.key}
               className="flex justify-between items-center gap-3 bg-slate-50 p-2 rounded border border-slate-100"
@@ -223,6 +235,7 @@ export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) 
                 <p className="font-bold text-slate-800">
                   {item.title}
                 </p>
+
                 <p className="text-[10px] text-slate-500">
                   {item.description}
                 </p>
@@ -240,6 +253,42 @@ export default function SalesProfileCard({ data, reportPeriod = "2026-09-01" }) 
             </p>
           )}
         </div>
+      </div>
+
+      {/* INDIKATOR SUMM: TETAP DI DALAM SALESPROFILECARD */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 md:col-span-3">
+        <div className="flex flex-wrap justify-between items-center gap-2 bg-slate-800 text-white px-3 py-1.5 rounded text-xs font-bold mb-3">
+          <span>INDIKATOR SUMM</span>
+          <span>{periodLabel}</span>
+        </div>
+
+        {summScorecard.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+            {summScorecard.map((item, index) => (
+              <div
+                key={`${item.indicator || "summ-indicator"}-${index}`}
+                className="rounded-lg border border-slate-200 bg-slate-50 p-3 flex flex-col gap-2"
+              >
+                <span className="inline-flex self-start rounded bg-slate-200 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-slate-600">
+                  {item.aspect || "SUMM"}
+                </span>
+
+                <p className="min-h-9 text-xs font-semibold leading-snug text-slate-700">
+                  {item.indicator || "Indikator"}
+                </p>
+
+                <p className="text-2xl font-black leading-none text-slate-800">
+                  {formatScore(item.value)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
+            Data indikator SUMM belum tersedia untuk salesman
+            dan periode ini.
+          </p>
+        )}
       </div>
     </div>
   );
